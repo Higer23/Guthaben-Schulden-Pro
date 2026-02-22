@@ -34,12 +34,43 @@ let _ref, _get, _set, _update, _push, _remove, _onValue, _off, _query, _orderByC
 let _currentUser = null;
 
 // ─── Initialisierung ────────────────────────────────────────────────────────
-export async function initFirebase() {
+
+/**
+ * Hilfsfunktion: Promise mit Timeout verpacken.
+ * Wenn das Original-Promise innerhalb von `ms` Millisekunden nicht auflöst,
+ * wird ein Fehler geworfen — so hängt die App nie endlos.
+ */
+function withTimeout(promise, ms, label = 'Operation') {
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`${label} — Timeout nach ${ms / 1000}s`)), ms)
+  );
+  return Promise.race([promise, timeout]);
+}
+
+/**
+ * Firebase initialisieren — mit Timeout (8 Sek.) und automatischem Retry (1x).
+ * Schlägt alles fehl → return false (Offline-Modus).
+ */
+export async function initFirebase(attempt = 1) {
+  const MAX_ATTEMPTS = 2;
+  const TIMEOUT_MS   = 8000; // 8 Sekunden pro Versuch
+
   try {
-    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-    const fb = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js');
+    console.log(`[Firebase] Initialisierung — Versuch ${attempt}/${MAX_ATTEMPTS}…`);
+
+    const [appModule, fb] = await withTimeout(
+      Promise.all([
+        import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js'),
+        import('https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js'),
+      ]),
+      TIMEOUT_MS,
+      'Firebase-Module laden'
+    );
+
+    const { initializeApp, getApps } = appModule;
 
     if (!getApps().length) initializeApp(FIREBASE_CONFIG);
+
     _db           = fb.getDatabase();
     _ref          = fb.ref;
     _get          = fb.get;
@@ -52,9 +83,28 @@ export async function initFirebase() {
     _query        = fb.query;
     _orderByChild = fb.orderByChild;
     _limitToLast  = fb.limitToLast;
+
+    // Verbindungstest: kleinen Ping zur DB senden
+    await withTimeout(
+      fb.get(fb.ref(_db, '.info/connected')),
+      5000,
+      'Firebase Verbindungstest'
+    );
+
+    console.log('[Firebase] ✅ Erfolgreich verbunden.');
     return true;
+
   } catch (e) {
-    console.warn('[Firebase] Initialisierung fehlgeschlagen:', e.message);
+    console.warn(`[Firebase] Versuch ${attempt} fehlgeschlagen:`, e.message);
+
+    // Automatischer Retry (einmal)
+    if (attempt < MAX_ATTEMPTS) {
+      console.log('[Firebase] 🔄 Erneuter Verbindungsversuch in 2 Sekunden…');
+      await new Promise(r => setTimeout(r, 2000));
+      return initFirebase(attempt + 1);
+    }
+
+    console.error('[Firebase] ❌ Alle Verbindungsversuche fehlgeschlagen. Offline-Modus aktiv.');
     return false;
   }
 }
@@ -373,4 +423,4 @@ export async function claimDailyReward(uid) {
 // ─── Systemstatistiken ───────────────────────────────────────────────────────
 export async function getSystemStats() {
   return await dbGet('systemStats') || {};
-}
+                     }
