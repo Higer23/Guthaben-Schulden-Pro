@@ -13,13 +13,14 @@
 // ─── YOUR FIREBASE CONFIG HERE ────────────────────────────────
 // Replace with your actual Firebase project config
 const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId:         "YOUR_PROJECT",
-  storageBucket:     "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+  apiKey:            "AIzaSyB6dLJ5VYAM8LaqQxy0vZDHL-xlMjf6qrU",
+  authDomain:        "guthaben-schulden-spiel.firebaseapp.com",
+  databaseURL:       "https://guthaben-schulden-spiel-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "guthaben-schulden-spiel",
+  storageBucket:     "guthaben-schulden-spiel.firebasestorage.app",
+  messagingSenderId: "925520444668",
+  appId:             "1:925520444668:web:f2b6be19772199848d2b79",
+  measurementId:     "G-8D53J7JYEC" // İsteğe bağlı (Analytics için)
 };
 
 // ─── Module-scoped Firebase references (FIX MİMARİ 1) ────────
