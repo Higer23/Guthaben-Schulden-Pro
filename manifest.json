@@ -1,0 +1,17 @@
+{
+  "name": "Guthaben-Schulden-Spiel Pro",
+  "short_name": "GS-Spiel",
+  "description": "Lerne positive und negative Zahlen mit dem Guthaben-Schulden-Spiel Pro Edition.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#22d3ee",
+  "orientation": "any",
+  "lang": "de",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icons/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["education", "games"],
+  "screenshots": []
+}
