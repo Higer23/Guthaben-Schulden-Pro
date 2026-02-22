@@ -1,46 +1,44 @@
-/**
+ /**
  * auth.js
  * =======
- * Authentifizierungsmodul — Benutzername/Passwort-basierter Login
- *
- * HINWEIS: Passwörter werden im Klartext gespeichert (wie gewünscht),
- * damit der Admin doppelte Passwörter erkennen und Benutzer sperren kann.
+ * Kimlik Doğrulama Modülü
+ * Düzeltme: Firebase fonksiyonlarını yeni yapıdan doğru şekilde import eder.
  */
 
 import {
   getUserByUsername, createUser, setCurrentUser,
   clearCurrentUser, getCurrentUser as fbGetCurrentUser,
-  recordDevice, dbUpdate,
+  recordDevice, dbUpdate, getUserProfile
 } from './firebase-config.js';
 
-// ─── Super-Admin Konfiguration ───────────────────────────────────────────────
+// ─── Super-Admin Yapılandırması ─────────────────────────────────────────────
 const SUPER_ADMIN = {
   username: 'Higer',
-  password: '19105887638',
+  password: '19105887638', // İsteğiniz üzerine düz metin şifre
   uid:      '__admin__',
 };
 
 const SESSION_KEY = 'gss_session_v4';
 
-// ─── Login ────────────────────────────────────────────────────────────────────
+// ─── Giriş İşlemi ───────────────────────────────────────────────────────────
 export async function loginUser(username, password) {
   if (!username || !password) {
-    return { success: false, error: 'Benutzername und Passwort sind erforderlich.' };
+    return { success: false, error: 'Kullanıcı adı ve şifre gereklidir.' };
   }
 
   try {
-    // Super-Admin-Prüfung (Hardcoded)
+    // 1. Super Admin Kontrolü
     if (username === SUPER_ADMIN.username) {
       if (password !== SUPER_ADMIN.password) {
-        return { success: false, error: 'Falsches Passwort.' };
+        return { success: false, error: 'Hatalı şifre.' };
       }
       const adminUser = {
-        uid:     SUPER_ADMIN.uid,
+        uid: SUPER_ADMIN.uid,
         profile: {
           username: 'Higer',
           displayName: 'Administrator',
-          isAdmin:  true,
-          avatar:   '👑',
+          isAdmin: true,
+          avatar: '👑',
         },
       };
       setCurrentUser(adminUser);
@@ -48,82 +46,86 @@ export async function loginUser(username, password) {
       return { success: true, isAdmin: true };
     }
 
+    // 2. Normal Kullanıcı Kontrolü
     const userData = await getUserByUsername(username);
+    
     if (!userData) {
-      return { success: false, error: 'Benutzer nicht gefunden.' };
+      return { success: false, error: 'Kullanıcı bulunamadı.' };
     }
 
-    // Passwort-Prüfung im Klartext
+    // Şifre Kontrolü (Düz Metin)
     if (userData.profile?.password !== password) {
-      return { success: false, error: 'Falsches Passwort.' };
+      return { success: false, error: 'Hatalı şifre.' };
     }
 
-    // Gesperrte Benutzer prüfen
+    // Ban Kontrolü
     if (userData.profile?.banned) {
-      return { success: false, error: 'Dein Konto wurde gesperrt. Wende dich an den Administrator.' };
+      return { success: false, error: 'Hesabınız askıya alınmıştır.' };
     }
 
     const user = {
-      uid:     userData.uid,
+      uid: userData.uid,
       profile: userData.profile,
     };
+    
     setCurrentUser(user);
     saveSession(user);
 
-    // Letzten Login + Aktivitätsprotokoll aktualisieren
-    await dbUpdate(`users/${userData.uid}/profile`, {
-      lastLogin:  Date.now(),
+    // Son giriş zamanını güncelle (Hata olsa bile devam et)
+    dbUpdate(`users/${userData.uid}/profile`, {
+      lastLogin: Date.now(),
       loginCount: (userData.profile?.loginCount || 0) + 1,
-    }).catch(() => {});
+    }).catch(console.error);
 
-    // Gerätedaten erfassen
-    recordDevice(userData.uid).catch(() => {});
+    recordDevice(userData.uid).catch(console.error);
 
     return { success: true };
+
   } catch (e) {
-    console.error('loginUser Fehler:', e);
-    return { success: false, error: 'Anmeldefehler: ' + e.message };
+    console.error('Login Hatası:', e);
+    return { success: false, error: 'Giriş yapılamadı: ' + e.message };
   }
 }
 
-// ─── Registrierung ───────────────────────────────────────────────────────────
+// ─── Kayıt İşlemi ───────────────────────────────────────────────────────────
 export async function signupUser(username, password, email) {
   if (!username || username.trim().length < 3) {
-    return { success: false, error: 'Benutzername muss mindestens 3 Zeichen lang sein.' };
+    return { success: false, error: 'Kullanıcı adı en az 3 karakter olmalı.' };
   }
   if (!password || password.length < 6) {
-    return { success: false, error: 'Passwort muss mindestens 6 Zeichen lang sein.' };
+    return { success: false, error: 'Şifre en az 6 karakter olmalı.' };
   }
+  
+  // Yasaklı isimler
   if (username.toLowerCase() === 'admin' || username === SUPER_ADMIN.username) {
-    return { success: false, error: 'Dieser Benutzername ist nicht verfügbar.' };
+    return { success: false, error: 'Bu kullanıcı adı alınamaz.' };
   }
+  
   if (!/^[a-zA-Z0-9_äöüÄÖÜß.-]+$/.test(username)) {
-    return { success: false, error: 'Benutzername darf nur Buchstaben, Zahlen und _ enthalten.' };
+    return { success: false, error: 'Kullanıcı adı geçersiz karakterler içeriyor.' };
   }
 
   try {
     const existing = await getUserByUsername(username);
     if (existing) {
-      return { success: false, error: 'Dieser Benutzername ist bereits vergeben.' };
+      return { success: false, error: 'Bu kullanıcı adı zaten alınmış.' };
     }
 
-    const uid      = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-    const now      = Date.now();
+    const uid = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    const now = Date.now();
 
     const userData = {
       profile: {
         username:      username.trim(),
         email:         email?.trim() || '',
-        password,       // Klartext-Passwort (wie gewünscht für Admin-Vergleich)
-        isAdmin:        false,
-        banned:         false,
-        createdAt:      now,
-        lastLogin:      now,
-        loginCount:     1,
-        theme:          'dark',
-        bio:            '',
-        avatar:         '',
-        dailyStreak:    0,
+        password:      password, // Admin görsün diye düz metin
+        isAdmin:       false,
+        banned:        false,
+        createdAt:     now,
+        lastLogin:     now,
+        loginCount:    1,
+        theme:         'dark',
+        dailyStreak:   0,
         lastDailyClaim: 0,
       },
       gameStats: {
@@ -144,24 +146,23 @@ export async function signupUser(username, password, email) {
     const user = { uid, profile: userData.profile };
     setCurrentUser(user);
     saveSession(user);
-
-    // Gerätedaten erfassen
     recordDevice(uid).catch(() => {});
 
     return { success: true };
+
   } catch (e) {
-    console.error('signupUser Fehler:', e);
-    return { success: false, error: 'Registrierungsfehler: ' + e.message };
+    console.error('Kayıt Hatası:', e);
+    return { success: false, error: 'Kayıt başarısız: ' + e.message };
   }
 }
 
-// ─── Session-Persistenz ─────────────────────────────────────────────────────
+// ─── Oturum Yönetimi ────────────────────────────────────────────────────────
 function saveSession(user) {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify({
-      uid:      user.uid,
+      uid: user.uid,
       username: user.profile?.username,
-      savedAt:  Date.now(),
+      savedAt: Date.now(),
     }));
   } catch (_) {}
 }
@@ -170,26 +171,31 @@ export async function restoreSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return false;
+    
     const sess = JSON.parse(raw);
     if (!sess.uid) return false;
 
-    // Session läuft nach 30 Tagen ab
+    // Oturum süresi (30 gün)
     if (Date.now() - (sess.savedAt || 0) > 30 * 24 * 60 * 60 * 1000) {
       localStorage.removeItem(SESSION_KEY);
       return false;
     }
 
+    // Admin Session
     if (sess.uid === SUPER_ADMIN.uid) {
       setCurrentUser({
-        uid:     SUPER_ADMIN.uid,
+        uid: SUPER_ADMIN.uid,
         profile: { username: 'Higer', displayName: 'Administrator', isAdmin: true, avatar: '👑' },
       });
       return true;
     }
 
-    const { getUserProfile } = await import('./firebase-config.js');
+    // Kullanıcı verisini Firebase'den taze çek
     const userData = await getUserProfile(sess.uid);
-    if (!userData) { localStorage.removeItem(SESSION_KEY); return false; }
+    if (!userData) { 
+      localStorage.removeItem(SESSION_KEY); 
+      return false; 
+    }
 
     if (userData.profile?.banned) {
       localStorage.removeItem(SESSION_KEY);
@@ -198,7 +204,9 @@ export async function restoreSession() {
 
     setCurrentUser({ uid: sess.uid, profile: userData.profile });
     return true;
-  } catch (_) {
+
+  } catch (e) {
+    console.warn("Session restore hatası:", e);
     return false;
   }
 }
