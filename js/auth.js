@@ -30,8 +30,8 @@ export async function loginUser(username, password) {
 
   try {
     // ADMIN shortcut (FIX: admin password should not be hardcoded — use env/config)
-    if (username === 'Higer') {
-      const adminPwd = await hashPassword('19105887638'); // Change this!
+    if (username === 'admin') {
+      const adminPwd = await hashPassword('admin_secure_2024'); // Change this!
       const inputPwd = await hashPassword(password);
       if (inputPwd !== adminPwd) {
         return { success: false, error: 'Yanlış şifre.' };
