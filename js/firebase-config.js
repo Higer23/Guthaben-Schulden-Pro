@@ -10,15 +10,17 @@
 
 // ─── FIREBASE CONFIGURATION ──────────────────────────────────────────────────
 // Replace these values with your Firebase project settings
-export const FIREBASE_CONFIG = {
-  apiKey:            "YOUR_API_KEY",
-  authDomain:        "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL:       "https://YOUR_PROJECT_ID-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId:         "YOUR_PROJECT_ID",
-  storageBucket:     "",          // Leave empty — Storage not used (paid)
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId:             "YOUR_APP_ID",
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyB6dLJ5VYAM8LaqQxy0vZDHL-xlMjf6qrU",
+  authDomain:        "guthaben-schulden-spiel.firebaseapp.com",
+  databaseURL:       "https://guthaben-schulden-spiel-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "guthaben-schulden-spiel",
+  storageBucket:     "guthaben-schulden-spiel.firebasestorage.app",
+  messagingSenderId: "925520444668",
+  appId:             "1:925520444668:web:f2b6be19772199848d2b79",
+  measurementId:     "G-8D53J7JYEC" // İsteğe bağlı (Analytics için)
 };
+
 
 // ─── DATABASE ROOT PATH ──────────────────────────────────────────────────────
 export const DB_ROOT = "guthaben-schulden-spiel-db";
