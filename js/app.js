@@ -98,8 +98,32 @@ async function init() {
 
   applyTheme(localStorage.getItem('gss_theme') || 'dark');
 
-  showLoadingOverlay(true);
+  showLoadingOverlay(true, 'Verbindung wird hergestellt…');
+
+  // Statusmeldungen während des Ladens anzeigen
+  const loadingMsgs = [
+    { delay: 3000, msg: 'Firebase wird geladen… (kann einen Moment dauern)' },
+    { delay: 8000, msg: 'Verbindung dauert länger als erwartet — bitte warten…' },
+    { delay: 14000, msg: 'Erneuter Verbindungsversuch läuft…' },
+  ];
+  const msgTimers = loadingMsgs.map(({ delay, msg }) =>
+    setTimeout(() => showLoadingOverlay(true, msg), delay)
+  );
+  // "Offline fortfahren"-Button nach 10 Sekunden einblenden
+  const skipBtnTimer = setTimeout(() => {
+    const btn = document.getElementById('fbLoadingSkipBtn');
+    if (btn) btn.classList.remove('hidden');
+  }, 10000);
+
   _firebaseReady = await initFirebase();
+
+  // Alle Statusmeldungs-Timer bereinigen
+  msgTimers.forEach(clearTimeout);
+  clearTimeout(skipBtnTimer);
+  // "Offline fortfahren"-Button verstecken (nicht mehr nötig)
+  const skipBtn = document.getElementById('fbLoadingSkipBtn');
+  if (skipBtn) skipBtn.classList.add('hidden');
+
   showLoadingOverlay(false);
 
   if (!_firebaseReady) showFirebaseError();
@@ -1181,9 +1205,14 @@ function clearInputs() {
   if (bal)  { bal.value  = ''; bal.className  = bal.className.replace(/border-(green|red)-500\/60/g, ''); }
 }
 
-function showLoadingOverlay(show) {
+function showLoadingOverlay(show, message) {
   const el = document.getElementById('fbLoadingOverlay');
-  if (el) el.classList.toggle('hidden', !show);
+  if (!el) return;
+  el.classList.toggle('hidden', !show);
+  if (show && message) {
+    const msgEl = document.getElementById('fbLoadingMessage');
+    if (msgEl) msgEl.textContent = message;
+  }
 }
 
 function showFirebaseError() {
