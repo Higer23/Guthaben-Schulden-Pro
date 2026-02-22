@@ -173,7 +173,7 @@
     <div class="text-6xl mb-4">⚠️</div>
     <h2 class="font-orbitron text-2xl text-red-400 mb-3">Kritischer Fehler</h2>
     <p id="crashMessage" class="text-slate-300 mb-6">Ein unerwarteter Fehler ist aufgetreten.</p>
-    <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
+    <button onclick="location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
       <i class="fas fa-redo mr-2"></i>Neu starten
     </button>
   </div>
@@ -727,7 +727,7 @@
           <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
             <i class="fas fa-trophy mr-2"></i>Sıralama Tablosu
           </h2>
-          <div id="leaderboardContent"></div>
+          <div id="leaderboardContainer"></div>
         </div>
       </div>
 
@@ -737,7 +737,7 @@
           <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
             <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
           </h2>
-          <div id="friendsContent"></div>
+          <div id="friendsContainer"></div>
         </div>
       </div>
 
