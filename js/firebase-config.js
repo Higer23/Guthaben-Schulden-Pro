@@ -1,23 +1,17 @@
 /**
  * firebase-config.js
  * ==================
- * Firebase Realtime Database — zentrales Datenbankmodul
- *
- * Firebase-Struktur (hierarchisch & aufgeräumt):
- *   /users/{uid}/profile        — Benutzerprofil
- *   /users/{uid}/gameStats      — Spielstatistiken
- *   /users/{uid}/achievements   — Errungenschaften
- *   /users/{uid}/inbox          — Eingehende Nachrichten (Admin → User)
- *   /users/{uid}/devices        — Geräteprotokolle
- *   /users/{uid}/log            — Login-Aktivitätslogs
- *   /users/{uid}/sessions       — Spielsitzungen
- *   /users/{uid}/friends        — Freundesliste
- *   /users_by_username/{name}   → uid (Index für schnelle Suche)
- *   /leaderboard/{uid}          — Ranglisten-Eintrag
- *   /chats/{chatId}/messages    — User-zu-User Nachrichten
- *   /friendRequests/{uid}       — Freundschaftsanfragen
+ * Firebase Realtime Database — Bağlantı ve Veri Yönetimi
+ * Düzeltme: Standart ES Modülleri kullanıldı ve Config güncellendi.
  */
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+  getDatabase, ref, get, set, update, push, remove, 
+  onValue, off, query, orderByChild, limitToLast 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+// Firebase Konsolundan alınan güncel yapılandırma
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB6dLJ5VYAM8LaqQxy0vZDHL-xlMjf6qrU",
   authDomain:        "guthaben-schulden-spiel.firebaseapp.com",
@@ -26,132 +20,122 @@ const FIREBASE_CONFIG = {
   storageBucket:     "guthaben-schulden-spiel.firebasestorage.app",
   messagingSenderId: "925520444668",
   appId:             "1:925520444668:web:f2b6be19772199848d2b79",
+  measurementId:     "G-8D53J7JYEC"
 };
 
-// ─── Modul-Scope Firebase-Referenzen ────────────────────────────────────────
+// ─── Global Değişkenler ─────────────────────────────────────────────────────
+let _app = null;
 let _db = null;
-let _ref, _get, _set, _update, _push, _remove, _onValue, _off, _query, _orderByChild, _limitToLast;
 let _currentUser = null;
+let _isOfflineMode = false;
 
-// ─── Initialisierung ────────────────────────────────────────────────────────
-
-/**
- * Hilfsfunktion: Promise mit Timeout verpacken.
- * Wenn das Original-Promise innerhalb von `ms` Millisekunden nicht auflöst,
- * wird ein Fehler geworfen — so hängt die App nie endlos.
- */
-function withTimeout(promise, ms, label = 'Operation') {
-  const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error(`${label} — Timeout nach ${ms / 1000}s`)), ms)
-  );
-  return Promise.race([promise, timeout]);
-}
-
-/**
- * Firebase initialisieren — mit Timeout (8 Sek.) und automatischem Retry (1x).
- * Schlägt alles fehl → return false (Offline-Modus).
- */
-export async function initFirebase(attempt = 1) {
-  const MAX_ATTEMPTS = 2;
-  const TIMEOUT_MS   = 8000; // 8 Sekunden pro Versuch
-
+// ─── Initialisierung (Başlatma) ─────────────────────────────────────────────
+export async function initFirebase() {
   try {
-    console.log(`[Firebase] Initialisierung — Versuch ${attempt}/${MAX_ATTEMPTS}…`);
+    console.log("[Firebase] Bağlantı başlatılıyor...");
+    
+    // Firebase uygulamasını başlat
+    _app = initializeApp(FIREBASE_CONFIG);
+    
+    // Veritabanı örneğini al
+    _db = getDatabase(_app);
 
-    const [appModule, fb] = await withTimeout(
-      Promise.all([
-        import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js'),
-        import('https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js'),
-      ]),
-      TIMEOUT_MS,
-      'Firebase-Module laden'
-    );
+    // Bağlantı testi yap
+    const connectedRef = ref(_db, ".info/connected");
+    
+    // Bağlantıyı bekle (3 saniye zaman aşımı ile)
+    const isConnected = await new Promise((resolve) => {
+      const timeout = setTimeout(() => resolve(false), 3000);
+      onValue(connectedRef, (snap) => {
+        clearTimeout(timeout);
+        const val = snap.val();
+        if (val === true) {
+          console.log("[Firebase] ✅ Bağlantı başarılı!");
+          resolve(true);
+        } else {
+          // İlk bağlantı false gelebilir, beklemeye devam etmiyoruz,
+          // onValue dinlemeye devam eder ama UI için resolve ediyoruz.
+        }
+      }, { onlyOnce: true });
+    });
 
-    const { initializeApp, getApps } = appModule;
-
-    if (!getApps().length) initializeApp(FIREBASE_CONFIG);
-
-    _db           = fb.getDatabase();
-    _ref          = fb.ref;
-    _get          = fb.get;
-    _set          = fb.set;
-    _update       = fb.update;
-    _push         = fb.push;
-    _remove       = fb.remove;
-    _onValue      = fb.onValue;
-    _off          = fb.off;
-    _query        = fb.query;
-    _orderByChild = fb.orderByChild;
-    _limitToLast  = fb.limitToLast;
-
-    // Verbindungstest: kleinen Ping zur DB senden
-    await withTimeout(
-      fb.get(fb.ref(_db, '.info/connected')),
-      5000,
-      'Firebase Verbindungstest'
-    );
-
-    console.log('[Firebase] ✅ Erfolgreich verbunden.');
-    return true;
+    return true; // SDK yüklendiği sürece true dönüyoruz, bağlantı kopuk olsa bile.
 
   } catch (e) {
-    console.warn(`[Firebase] Versuch ${attempt} fehlgeschlagen:`, e.message);
-
-    // Automatischer Retry (einmal)
-    if (attempt < MAX_ATTEMPTS) {
-      console.log('[Firebase] 🔄 Erneuter Verbindungsversuch in 2 Sekunden…');
-      await new Promise(r => setTimeout(r, 2000));
-      return initFirebase(attempt + 1);
-    }
-
-    console.error('[Firebase] ❌ Alle Verbindungsversuche fehlgeschlagen. Offline-Modus aktiv.');
+    console.error("[Firebase] Kritik Hata:", e);
+    _isOfflineMode = true;
     return false;
   }
 }
 
-// ─── Hilfsfunktionen ────────────────────────────────────────────────────────
-export function dbRef(path) { return _ref(_db, path); }
+// ─── Veritabanı Yardımcı Fonksiyonları (Wrapper) ────────────────────────────
+// Bu fonksiyonlar app.js ve diğer dosyalardaki yapıyı bozmadan modern SDK'yı kullanır.
+
+export function dbRef(path) { 
+  if (!_db) return null;
+  return ref(_db, path); 
+}
 
 export async function dbGet(path) {
-  const snap = await _get(dbRef(path));
-  return snap.exists() ? snap.val() : null;
+  if (_isOfflineMode || !_db) return null;
+  try {
+    const snapshot = await get(ref(_db, path));
+    return snapshot.exists() ? snapshot.val() : null;
+  } catch (e) {
+    console.warn(`dbGet hatası (${path}):`, e);
+    return null;
+  }
 }
 
 export async function dbSet(path, value) {
-  await _set(dbRef(path), value);
+  if (_isOfflineMode || !_db) return;
+  await set(ref(_db, path), value);
 }
 
 export async function dbUpdate(path, value) {
-  await _update(dbRef(path), value);
+  if (_isOfflineMode || !_db) return;
+  await update(ref(_db, path), value);
 }
 
 export async function dbPush(path, value) {
-  return await _push(dbRef(path), value);
+  if (_isOfflineMode || !_db) return null;
+  return await push(ref(_db, path), value);
+}
+
+export async function dbRemove(path) {
+  if (_isOfflineMode || !_db) return;
+  await remove(ref(_db, path));
 }
 
 export function dbOnValue(path, callback) {
-  return _onValue(dbRef(path), snap => callback(snap.exists() ? snap.val() : null));
+  if (_isOfflineMode || !_db) return () => {};
+  return onValue(ref(_db, path), (snap) => {
+    callback(snap.exists() ? snap.val() : null);
+  });
 }
 
 export function dbOff(path) {
-  _off(dbRef(path));
+  if (_isOfflineMode || !_db) return;
+  off(ref(_db, path));
 }
 
-// ─── Aktueller Benutzer ─────────────────────────────────────────────────────
+// ─── Kullanıcı Yönetimi (State) ─────────────────────────────────────────────
 export function getCurrentUser()      { return _currentUser; }
 export function setCurrentUser(user)  { _currentUser = user; }
 export function clearCurrentUser()    { _currentUser = null; }
 export function isAdmin()             { return _currentUser?.profile?.isAdmin === true; }
 
-// ─── Authentifizierung ──────────────────────────────────────────────────────
+// ─── Authentifizierung (Kimlik Doğrulama) ───────────────────────────────────
 export async function getUserByUsername(username) {
   try {
+    // Önce index üzerinden dene
     const uid = await dbGet(`users_by_username/${username.toLowerCase()}`);
     if (uid) {
       const userData = await dbGet(`users/${uid}`);
       return userData ? { uid, ...userData } : null;
     }
-    // Fallback: vollständiger Scan (für alte Daten)
+    
+    // Fallback: Tüm kullanıcıları tara (Eski veri yapısı için)
     const users = await dbGet('users');
     if (!users) return null;
     for (const [uid, user] of Object.entries(users)) {
@@ -161,7 +145,7 @@ export async function getUserByUsername(username) {
     }
     return null;
   } catch (e) {
-    console.warn('getUserByUsername Fehler:', e);
+    console.warn('getUserByUsername Hatası:', e);
     return null;
   }
 }
@@ -181,9 +165,10 @@ export async function updateUserProfile(uid, updates) {
   await dbUpdate(`users/${uid}/profile`, updates);
 }
 
-// ─── Spielstatistiken ───────────────────────────────────────────────────────
+// ─── İstatistikler ve Oyun Verileri ─────────────────────────────────────────
 export async function updateUserGameStats(uid, stats) {
   await dbUpdate(`users/${uid}/gameStats`, stats);
+  // Leaderboard güncelle
   const user = await dbGet(`users/${uid}/profile`);
   await dbUpdate(`leaderboard/${uid}`, {
     username:    user?.username || '?',
@@ -203,18 +188,18 @@ export async function saveGameSession(uid, session) {
   await dbPush(`users/${uid}/sessions`, { ...session, timestamp: Date.now() });
 }
 
-// ─── Admin: Spielerdaten ändern ─────────────────────────────────────────────
+// ─── Admin İşlevleri ────────────────────────────────────────────────────────
 export async function adminUpdateUserStats(uid, { score, level, streak }) {
   const updates = {};
   if (score  !== undefined) updates.totalScore   = parseInt(score);
   if (level  !== undefined) updates.maxLevel     = parseInt(level);
   if (streak !== undefined) updates.maxStreak    = parseInt(streak);
-  updates.currentLevel  = level  !== undefined ? parseInt(level) - 1 : undefined;
-  updates.currentStreak = streak !== undefined ? parseInt(streak) : undefined;
-  // Entferne undefined-Werte
-  Object.keys(updates).forEach(k => updates[k] === undefined && delete updates[k]);
+  
+  if (level !== undefined) updates.currentLevel = Math.max(0, parseInt(level) - 1);
+  if (streak !== undefined) updates.currentStreak = parseInt(streak);
+
   await dbUpdate(`users/${uid}/gameStats`, updates);
-  // Rangliste aktualisieren
+  
   await dbUpdate(`leaderboard/${uid}`, {
     totalScore: updates.totalScore,
     maxLevel:   updates.maxLevel,
@@ -223,24 +208,20 @@ export async function adminUpdateUserStats(uid, { score, level, streak }) {
   });
 }
 
-export async function adminBanUser(uid) {
-  await dbUpdate(`users/${uid}/profile`, { banned: true, bannedAt: Date.now() });
+export async function getAllUsers() {
+  return await dbGet('users') || {};
 }
 
-export async function adminUnbanUser(uid) {
-  await dbUpdate(`users/${uid}/profile`, { banned: false });
+export async function deleteUser(uid) {
+  const user = await dbGet(`users/${uid}/profile`);
+  await dbSet(`users/${uid}`, null);
+  if (user?.username) {
+    await dbSet(`users_by_username/${user.username.toLowerCase()}`, null);
+  }
+  await dbSet(`leaderboard/${uid}`, null);
 }
 
-// ─── Errungenschaften ───────────────────────────────────────────────────────
-export async function getUserAchievements(uid) {
-  return await dbGet(`users/${uid}/achievements`) || {};
-}
-
-export async function unlockAchievement(uid, achievementId) {
-  await dbUpdate(`users/${uid}/achievements`, { [achievementId]: Date.now() });
-}
-
-// ─── Postfach / Nachrichten ─────────────────────────────────────────────────
+// ─── Mesajlaşma ve Bildirimler ──────────────────────────────────────────────
 export async function getInbox(uid) {
   try { return await dbGet(`users/${uid}/inbox`) || {}; }
   catch { return {}; }
@@ -250,20 +231,6 @@ export async function markMessageRead(uid, msgKey) {
   await dbUpdate(`users/${uid}/inbox/${msgKey}`, { isRead: true, readAt: Date.now() });
 }
 
-export async function sendMessageToUser(targetUid, msg, fromUid = null) {
-  const sender = getCurrentUser();
-  const msgData = {
-    subject:  msg.subject  || 'Nachricht',
-    body:     msg.body     || '',
-    from:     fromUid || (sender?.uid || 'admin'),
-    fromName: msg.fromName || (sender?.profile?.username || 'Admin'),
-    sentAt:   Date.now(),
-    isRead:   false,
-  };
-  await dbPush(`users/${targetUid}/inbox`, msgData);
-}
-
-// ─── Alle Nachrichten abrufen (Admin) ───────────────────────────────────────
 export async function getAllMessages() {
   const users = await dbGet('users') || {};
   const allMessages = [];
@@ -280,82 +247,57 @@ export async function getAllMessages() {
   return allMessages.sort((a, b) => (b.sentAt || 0) - (a.sentAt || 0));
 }
 
-// ─── Admin ──────────────────────────────────────────────────────────────────
-export async function getAllUsers() {
-  return await dbGet('users') || {};
-}
+// ─── Günlük Ödül ────────────────────────────────────────────────────────────
+export async function claimDailyReward(uid) {
+  const profile = await dbGet(`users/${uid}/profile`);
+  const lastClaim = profile?.lastDailyClaim || 0;
+  const now = Date.now();
+  const oneDayMs = 24 * 60 * 60 * 1000;
 
-export async function deleteUser(uid) {
-  const user = await dbGet(`users/${uid}/profile`);
-  await dbSet(`users/${uid}`, null);
-  if (user?.username) {
-    await dbSet(`users_by_username/${user.username.toLowerCase()}`, null);
+  if (now - lastClaim < oneDayMs) {
+    const remaining = oneDayMs - (now - lastClaim);
+    return { success: false, remaining };
   }
-  await dbSet(`leaderboard/${uid}`, null);
+
+  const streak = (profile?.dailyStreak || 0) + 1;
+  const reward = Math.min(50 + streak * 10, 200);
+
+  await dbUpdate(`users/${uid}/profile`, {
+    lastDailyClaim: now,
+    dailyStreak: streak,
+  });
+  
+  const currentScore = (await dbGet(`users/${uid}/gameStats/totalScore`)) || 0;
+  await dbUpdate(`users/${uid}/gameStats`, {
+    totalScore: currentScore + reward,
+  });
+
+  return { success: true, reward, streak };
 }
 
-// ─── Rangliste ───────────────────────────────────────────────────────────────
-export async function getLeaderboard() {
-  try { return await dbGet('leaderboard') || {}; }
-  catch { return {}; }
-}
-
-// ─── Geräteprotokoll (Login-Daten sammeln) ───────────────────────────────────
+// ─── Cihaz Kaydı ────────────────────────────────────────────────────────────
 export async function recordDevice(uid) {
   try {
-    const nav   = window.navigator;
-    const conn  = nav.connection || nav.mozConnection || nav.webkitConnection;
-    const bat   = await navigator.getBattery?.().catch(() => null);
-
+    const nav = window.navigator;
     const deviceData = {
-      userAgent:        nav.userAgent,
-      platform:         nav.platform,
-      language:         nav.language,
-      languages:        nav.languages?.join(', ') || '',
-      screenWidth:      screen.width,
-      screenHeight:     screen.height,
-      colorDepth:       screen.colorDepth,
-      pixelRatio:       window.devicePixelRatio,
-      timezone:         Intl.DateTimeFormat().resolvedOptions().timeZone,
-      timezoneOffset:   new Date().getTimezoneOffset(),
-      ram:              nav.deviceMemory ? `${nav.deviceMemory} GB` : 'Unbekannt',
-      cores:            nav.hardwareConcurrency || 'Unbekannt',
-      connectionType:   conn?.effectiveType || conn?.type || 'Unbekannt',
-      downlink:         conn?.downlink ? `${conn.downlink} Mbps` : 'Unbekannt',
-      cookiesEnabled:   nav.cookieEnabled,
-      battery:          bat ? `${Math.round(bat.level * 100)}% (${bat.charging ? 'lädt' : 'Akku'})` : 'Unbekannt',
-      touchPoints:      nav.maxTouchPoints,
-      doNotTrack:       nav.doNotTrack || 'Unbekannt',
-      loginTime:        Date.now(),
-      loginTimeHuman:   new Date().toLocaleString('de-DE'),
+      userAgent: nav.userAgent,
+      platform: nav.platform,
+      language: nav.language,
+      screenWidth: window.screen.width,
+      loginTime: Date.now()
     };
-
     const deviceKey = `dev_${Date.now()}`;
     await dbUpdate(`users/${uid}/devices/${deviceKey}`, deviceData);
-    await dbPush(`users/${uid}/log`, {
-      type:      'login',
-      timestamp: Date.now(),
-      ip:        'N/A',
-      device:    nav.userAgent.slice(0, 80),
-    });
   } catch (e) {
-    console.warn('Geräteprotokoll fehlgeschlagen:', e.message);
+    console.warn('Cihaz kaydı yapılamadı:', e);
   }
 }
 
-// ─── Freundessystem ──────────────────────────────────────────────────────────
+// ─── Arkadaşlık ve Sohbet ───────────────────────────────────────────────────
 export async function sendFriendRequest(fromUid, toUid) {
   await dbSet(`friendRequests/${toUid}/${fromUid}`, {
-    from:      fromUid,
-    sentAt:    Date.now(),
-    status:    'pending',
+    from: fromUid, sentAt: Date.now(), status: 'pending'
   });
-}
-
-export async function acceptFriendRequest(uid, requestorUid) {
-  await dbUpdate(`users/${uid}/friends`, { [requestorUid]: { since: Date.now(), status: 'accepted' } });
-  await dbUpdate(`users/${requestorUid}/friends`, { [uid]: { since: Date.now(), status: 'accepted' } });
-  await dbSet(`friendRequests/${uid}/${requestorUid}`, null);
 }
 
 export async function getFriendRequests(uid) {
@@ -366,21 +308,27 @@ export async function getUserFriends(uid) {
   return await dbGet(`users/${uid}/friends`) || {};
 }
 
-// ─── User-zu-User Chat ───────────────────────────────────────────────────────
+export async function acceptFriendRequest(uid, requestorUid) {
+  await dbUpdate(`users/${uid}/friends`, { [requestorUid]: { since: Date.now(), status: 'accepted' } });
+  await dbUpdate(`users/${requestorUid}/friends`, { [uid]: { since: Date.now(), status: 'accepted' } });
+  await dbSet(`friendRequests/${uid}/${requestorUid}`, null);
+}
+
+// Sohbet
 export function getChatId(uid1, uid2) {
   return [uid1, uid2].sort().join('_');
 }
 
 export async function sendChatMessage(fromUid, toUid, text) {
-  const chatId  = getChatId(fromUid, toUid);
-  const sender  = getCurrentUser();
+  const chatId = getChatId(fromUid, toUid);
+  const sender = getCurrentUser();
   await dbPush(`chats/${chatId}/messages`, {
-    from:      fromUid,
-    fromName:  sender?.profile?.username || 'Unbekannt',
-    to:        toUid,
-    text:      text.trim(),
-    sentAt:    Date.now(),
-    isRead:    false,
+    from: fromUid,
+    fromName: sender?.profile?.username || '?',
+    to: toUid,
+    text: text.trim(),
+    sentAt: Date.now(),
+    isRead: false
   });
 }
 
@@ -394,33 +342,6 @@ export function stopListenChatMessages(fromUid, toUid) {
   dbOff(`chats/${chatId}/messages`);
 }
 
-// ─── Tägliche Belohnung ──────────────────────────────────────────────────────
-export async function claimDailyReward(uid) {
-  const profile = await dbGet(`users/${uid}/profile`);
-  const lastClaim = profile?.lastDailyClaim || 0;
-  const now = Date.now();
-  const oneDayMs = 24 * 60 * 60 * 1000;
-
-  if (now - lastClaim < oneDayMs) {
-    const remaining = oneDayMs - (now - lastClaim);
-    return { success: false, remaining };
-  }
-
-  const streak = (profile?.dailyStreak || 0) + 1;
-  const reward = Math.min(50 + streak * 10, 200); // Max 200 Punkte
-
-  await dbUpdate(`users/${uid}/profile`, {
-    lastDailyClaim: now,
-    dailyStreak: streak,
-  });
-  await dbUpdate(`users/${uid}/gameStats`, {
-    totalScore: (await dbGet(`users/${uid}/gameStats/totalScore`) || 0) + reward,
-  });
-
-  return { success: true, reward, streak };
+export async function getLeaderboard() {
+  return await dbGet('leaderboard') || {};
 }
-
-// ─── Systemstatistiken ───────────────────────────────────────────────────────
-export async function getSystemStats() {
-  return await dbGet('systemStats') || {};
-                     }
