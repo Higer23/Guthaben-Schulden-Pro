@@ -1,423 +1,506 @@
 /**
  * admin.js
  * ========
- * Admin Panel — Guthaben-Schulden-Spiel Pro Edition
- * FIXES:
- *   HATA 17: try-catch — Firebase crash koruması
- *   HATA 18: body scroll kilidi — openAdminPanel/closeAdminPanel
- *   HATA 19: admin-pane ID eşleşmesi — getElementById kullanımı
+ * Admin Panel: Full Management Interface
+ * Guthaben-Schulden-Spiel Pro Edition
  */
 
-import { getAllUsers, getSystemStats, sendMessageToUser, getUserProfile, updateUserProfile, deleteUser } from './firebase-config.js';
+import {
+  getAllUsers, deleteUser, updateUserProfile, updateUserGameStats,
+  getUserDevices, banDevice, getSystemStats, logAdminAction,
+  sendMessage, getSentMessages, getInbox, getAdminLogs,
+  getUserProfile, getUserAchievements,
+} from './firebase-config.js';
+import { getCurrentUser } from './auth.js';
 
-// ─── Panel Open/Close ─────────────────────────────────────────
-/**
- * FIX HATA 18: body scroll kilidi eklendi.
- */
+// ─── OPEN ADMIN PANEL ────────────────────────────────────────────────────────
 export function openAdminPanel() {
   const overlay = document.getElementById('adminOverlay');
   if (!overlay) return;
   overlay.classList.remove('hidden');
   overlay.classList.add('flex');
-  // FIX HATA 18
-  document.body.style.overflow = 'hidden';
   loadAdminTab('stats');
 }
 
-/**
- * FIX HATA 18: body scroll kilidi kaldırıldı.
- */
 export function closeAdminPanel() {
   const overlay = document.getElementById('adminOverlay');
   if (!overlay) return;
   overlay.classList.add('hidden');
   overlay.classList.remove('flex');
-  // FIX HATA 18
-  document.body.style.overflow = '';
 }
 
-// ─── Tab Loading ──────────────────────────────────────────────
-/**
- * FIX HATA 19: getElementById kullanımı — data-pane yerine id ile eşleşme.
- */
+// ─── TAB SWITCHER ────────────────────────────────────────────────────────────
 export function loadAdminTab(tab) {
-  // Update tab button styles
-  document.querySelectorAll('.admin-tab-btn').forEach(btn => {
-    btn.classList.toggle('active-admin-tab', btn.dataset.tab === tab);
+  document.querySelectorAll('.admin-tab-btn').forEach(b => {
+    b.classList.toggle('active-admin-tab', b.dataset.tab === tab);
+  });
+  document.querySelectorAll('.admin-tab-pane').forEach(p => {
+    p.classList.toggle('hidden', p.dataset.pane !== tab);
   });
 
-  // FIX HATA 19 — ID ile pane seçimi
-  ['stats', 'users', 'messages', 'devices', 'logs'].forEach(name => {
-    const el = document.getElementById(`admin-pane-${name}`);
-    if (el) el.classList.toggle('hidden', name !== tab);
-  });
-
-  // Load tab content
   switch (tab) {
-    case 'stats':    renderAdminStats();    break;
-    case 'users':    renderUsersList();     break;
+    case 'stats':    renderAdminStats();   break;
+    case 'users':    renderUsersList();    break;
     case 'messages': renderAdminMessages(); break;
-    case 'devices':  renderDevices();       break;
-    case 'logs':     renderAdminLogs();     break;
+    case 'devices':  renderDevices();      break;
+    case 'logs':     renderAdminLogs();    break;
   }
 }
 
-// ─── Sanitize helper ─────────────────────────────────────────
-function sanitize(str) {
-  if (str == null) return '';
-  const div = document.createElement('div');
-  div.textContent = String(str);
-  return div.innerHTML;
-}
-
-// ─── Admin Stats ──────────────────────────────────────────────
-/**
- * FIX HATA 17: try-catch — Firebase crash koruması.
- */
+// ─── STATS TAB ───────────────────────────────────────────────────────────────
 async function renderAdminStats() {
   const pane = document.getElementById('admin-pane-stats');
-  if (!pane) return;
-  pane.innerHTML = `<div class="flex items-center justify-center py-12">
-    <div class="w-8 h-8 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin"></div>
-    <span class="ml-3 text-slate-400 font-orbitron text-sm">Yükleniyor...</span>
-  </div>`;
+  pane.innerHTML = `<div class="flex items-center justify-center h-40 text-slate-400">
+    <i class="fas fa-spinner fa-spin mr-2"></i>Yükleniyor...</div>`;
 
-  try {
-    const [stats, users] = await Promise.all([
-      getSystemStats().catch(() => ({})),
-      getAllUsers().catch(() => ({})),
-    ]);
+  const [stats, users] = await Promise.all([getSystemStats(), getAllUsers()]);
 
-    const userCount  = Object.keys(users || {}).length;
-    const totalScore = Object.values(users || {}).reduce((sum, u) => sum + (u.gameStats?.totalScore || 0), 0);
-    const totalGames = Object.values(users || {}).reduce((sum, u) => sum + (u.gameStats?.totalGamesPlayed || 0), 0);
-    const avgScore   = userCount > 0 ? Math.round(totalScore / userCount) : 0;
+  const usersArr = Object.entries(users).map(([uid, u]) => ({ uid, ...u }));
+  const sorted   = usersArr.filter(u => u.profile).sort((a, b) =>
+    (b.game?.stats?.totalScore || 0) - (a.game?.stats?.totalScore || 0));
 
-    pane.innerHTML = `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        ${adminStat('👥 Kullanıcılar', userCount, 'cyan')}
-        ${adminStat('🎮 Toplam Oyun', totalGames, 'purple')}
-        ${adminStat('🏆 Toplam Puan', totalScore.toLocaleString(), 'yellow')}
-        ${adminStat('📊 Ort. Puan', avgScore, 'green')}
+  const recent = usersArr.filter(u => u.profile)
+    .sort((a, b) => (b.profile?.lastLogin || 0) - (a.profile?.lastLogin || 0))
+    .slice(0, 10);
+
+  const topBrowser = Object.entries(stats.browserMap).sort((a, b) => b[1] - a[1])[0];
+  const topOS      = Object.entries(stats.osMap).sort((a, b) => b[1] - a[1])[0];
+
+  pane.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      ${statCard('👥 Toplam Kullanıcı', stats.totalUsers, 'cyan')}
+      ${statCard('✅ Aktif (24s)', stats.activeToday, 'green')}
+      ${statCard('🌐 En Çok Browser', topBrowser ? `${topBrowser[0]} (${topBrowser[1]})` : '—', 'purple')}
+      ${statCard('💻 En Çok OS', topOS ? `${topOS[0]} (${topOS[1]})` : '—', 'yellow')}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="admin-card p-5 rounded-xl">
+        <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">🏆 En Çok Oynayan</h3>
+        <div class="space-y-2">
+          ${sorted.slice(0, 10).map((u, i) => `
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">${i + 1}.</span>
+              <span class="flex-1 ml-2 text-slate-200 font-semibold">${u.profile.username}</span>
+              <span class="text-cyan-400 font-orbitron">${(u.game?.stats?.totalScore || 0).toLocaleString()}</span>
+            </div>`).join('') || '<p class="text-slate-500 text-sm">Henüz yok</p>'}
+        </div>
       </div>
-      <div class="text-xs text-slate-500 text-center mt-4">
-        Son güncelleme: ${new Date().toLocaleString('tr-TR')}
-      </div>`;
-  } catch (err) {
-    pane.innerHTML = `<div class="text-red-400 p-4 text-sm font-orbitron">
-      <i class="fas fa-exclamation-triangle mr-2"></i>Hata: ${sanitize(err.message)}
+      <div class="admin-card p-5 rounded-xl">
+        <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">🕐 En Son Giriş</h3>
+        <div class="space-y-2">
+          ${recent.map(u => `
+            <div class="flex items-center justify-between text-sm">
+              <span class="flex-1 text-slate-200">${u.profile.username}</span>
+              <span class="text-slate-400">${fmtTime(u.profile.lastLogin)}</span>
+            </div>`).join('') || '<p class="text-slate-500 text-sm">Henüz yok</p>'}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 admin-card p-5 rounded-xl">
+      <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">📊 Cihaz İstatistikleri</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-slate-500 mb-2">Browser Dağılımı</p>
+          ${Object.entries(stats.browserMap).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+            `<div class="flex justify-between text-sm mb-1"><span class="text-slate-300">${k}</span><span class="text-cyan-400">${v}</span></div>`
+          ).join('') || '<p class="text-slate-500 text-sm">Veri yok</p>'}
+        </div>
+        <div>
+          <p class="text-xs text-slate-500 mb-2">İşletim Sistemi Dağılımı</p>
+          ${Object.entries(stats.osMap).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+            `<div class="flex justify-between text-sm mb-1"><span class="text-slate-300">${k}</span><span class="text-purple-400">${v}</span></div>`
+          ).join('') || '<p class="text-slate-500 text-sm">Veri yok</p>'}
+        </div>
+      </div>
     </div>`;
-    console.error('renderAdminStats error:', err);
-  }
 }
 
-/**
- * FIX HATA 17: try-catch.
- */
+function statCard(label, value, color) {
+  const c = { cyan: 'text-cyan-400 border-cyan-500/20', green: 'text-green-400 border-green-500/20',
+               purple: 'text-purple-400 border-purple-500/20', yellow: 'text-yellow-400 border-yellow-500/20' }[color] || 'text-slate-200';
+  return `<div class="admin-card border ${c.split(' ')[1] || ''} rounded-xl p-4 text-center">
+    <div class="font-orbitron text-2xl font-black ${c.split(' ')[0]} mb-1">${value}</div>
+    <div class="text-xs text-slate-400 uppercase tracking-wide">${label}</div>
+  </div>`;
+}
+
+// ─── USERS LIST TAB ───────────────────────────────────────────────────────────
 async function renderUsersList() {
   const pane = document.getElementById('admin-pane-users');
-  if (!pane) return;
-  pane.innerHTML = loadingHtml();
+  pane.innerHTML = `<div class="flex items-center justify-center h-40 text-slate-400">
+    <i class="fas fa-spinner fa-spin mr-2"></i>Kullanıcılar yükleniyor...</div>`;
 
-  try {
-    const users = await getAllUsers();
-    const usersArr = Object.entries(users || {}).sort((a, b) =>
-      (b[1].gameStats?.totalScore || 0) - (a[1].gameStats?.totalScore || 0)
-    );
+  const users = await getAllUsers();
 
-    if (usersArr.length === 0) {
-      pane.innerHTML = '<p class="text-slate-500 text-center py-8">Henüz kullanıcı yok.</p>';
-      return;
-    }
-
-    pane.innerHTML = `
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="text-left text-xs font-orbitron text-slate-500 uppercase tracking-widest border-b border-white/5">
-              <th class="pb-3 pr-4">#</th>
-              <th class="pb-3 pr-4">Kullanıcı</th>
-              <th class="pb-3 pr-4">Puan</th>
-              <th class="pb-3 pr-4">Seviye</th>
-              <th class="pb-3 pr-4">Streak</th>
-              <th class="pb-3">İşlem</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody"></tbody>
-        </table>
-      </div>`;
-
-    const tbody = document.getElementById('usersTableBody');
-    usersArr.forEach(([uid, user], i) => {
-      const gs  = user.gameStats || {};
-      const pro = user.profile   || {};
-      const tr  = document.createElement('tr');
-      tr.className = 'border-b border-white/5 hover:bg-white/3 transition-colors';
-      tr.innerHTML = `
-        <td class="py-3 pr-4 text-slate-500">${i + 1}</td>
-        <td class="py-3 pr-4">
-          <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
-              ${sanitize(pro.username?.charAt(0)?.toUpperCase() || '?')}
+  const rows = await Promise.all(Object.entries(users).map(async ([uid, u]) => {
+    if (!u.profile) return '';
+    const devCount = Object.keys(u.devices || {}).length;
+    return `
+      <tr class="border-b border-white/5 hover:bg-white/3 transition-colors">
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
+              ${u.profile.username?.charAt(0)?.toUpperCase()}
             </div>
             <div>
-              <div class="text-slate-200 font-semibold">${sanitize(pro.username || 'Bilinmeyen')}</div>
-              ${pro.isAdmin ? '<span class="text-xs text-yellow-400">Admin</span>' : ''}
+              <div class="font-semibold text-slate-200 text-sm">${u.profile.username}</div>
+              <div class="text-xs text-slate-500">${u.profile.email || '—'}</div>
             </div>
           </div>
         </td>
-        <td class="py-3 pr-4 font-orbitron text-cyan-400">${(gs.totalScore || 0).toLocaleString()}</td>
-        <td class="py-3 pr-4 text-yellow-400">${gs.maxLevel || 1}</td>
-        <td class="py-3 pr-4 text-orange-400">${gs.maxStreak || 0}</td>
-        <td class="py-3">
-          <button class="admin-btn-sm border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
-            onclick="window.adminEditUser('${sanitize(uid)}')" title="Düzenle">
-            <i class="fas fa-edit"></i>
-          </button>
-          <button class="admin-btn-sm border-purple-500/30 text-purple-400 hover:bg-purple-500/10 ml-1"
-            onclick="window.adminMessageUser('${sanitize(uid)}', '${sanitize(pro.username)}')" title="Mesaj Gönder">
-            <i class="fas fa-envelope"></i>
-          </button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  } catch (err) {
-    pane.innerHTML = errorHtml(err.message);
-    console.error('renderUsersList error:', err);
-  }
-}
-
-/**
- * FIX HATA 17: try-catch.
- */
-async function renderAdminMessages() {
-  const pane = document.getElementById('admin-pane-messages');
-  if (!pane) return;
-  pane.innerHTML = loadingHtml();
-
-  try {
-    const users = await getAllUsers();
-    const usersArr = Object.entries(users || {});
-
-    pane.innerHTML = `
-      <div class="space-y-4">
-        <div class="glass-panel rounded-xl p-4 border border-white/10">
-          <h3 class="font-orbitron text-sm text-slate-300 mb-3"><i class="fas fa-broadcast-tower mr-2 text-cyan-400"></i>Toplu Mesaj Gönder</h3>
-          <div class="space-y-3">
-            <input id="msgSubject" type="text" placeholder="Konu" class="game-input w-full px-3 py-2 rounded-xl text-sm" />
-            <textarea id="msgBody" rows="3" placeholder="Mesaj içeriği..." class="game-input w-full px-3 py-2 rounded-xl text-sm resize-none"></textarea>
-            <div class="flex gap-3">
-              <select id="msgTarget" class="game-input flex-1 px-3 py-2 rounded-xl text-sm">
-                <option value="all">Tüm Kullanıcılar (${usersArr.length})</option>
-              </select>
-              <button onclick="window.adminSendBroadcast()" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm font-orbitron hover:bg-cyan-500/30">
-                <i class="fas fa-paper-plane mr-1"></i>Gönder
-              </button>
-            </div>
+        <td class="px-4 py-3 text-xs text-slate-400">${fmtDate(u.profile.createdAt)}</td>
+        <td class="px-4 py-3 text-xs text-slate-400">${fmtTime(u.profile.lastLogin)}</td>
+        <td class="px-4 py-3 text-center font-orbitron text-sm text-cyan-400">${u.game?.stats?.currentLevel || 1}</td>
+        <td class="px-4 py-3 text-center font-orbitron text-sm text-yellow-400">${(u.game?.stats?.totalScore || 0).toLocaleString()}</td>
+        <td class="px-4 py-3 text-center text-slate-400 text-sm">${devCount}</td>
+        <td class="px-4 py-3">
+          <div class="flex gap-2 justify-end">
+            <button onclick="window.adminEditUser('${uid}')" class="admin-btn-sm text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button onclick="window.adminMsgUser('${uid}','${u.profile.username}')" class="admin-btn-sm text-green-400 border-green-500/30 hover:bg-green-500/10">
+              <i class="fas fa-envelope"></i>
+            </button>
+            <button onclick="window.adminDeleteUser('${uid}','${u.profile.username}')" class="admin-btn-sm text-red-400 border-red-500/30 hover:bg-red-500/10">
+              <i class="fas fa-trash"></i>
+            </button>
           </div>
-        </div>
-      </div>`;
-  } catch (err) {
-    pane.innerHTML = errorHtml(err.message);
-    console.error('renderAdminMessages error:', err);
-  }
+        </td>
+      </tr>`;
+  }));
+
+  pane.innerHTML = `
+    <div class="flex items-center gap-4 mb-4">
+      <input id="userSearchInput" type="text" placeholder="Kullanıcı ara..." 
+        class="game-input flex-1 px-4 py-2 rounded-xl text-sm" oninput="window.filterUserTable(this.value)" />
+      <span class="text-slate-400 text-sm">${Object.keys(users).length} kullanıcı</span>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm" id="usersTable">
+        <thead>
+          <tr class="border-b border-white/10">
+            <th class="px-4 py-3 text-left text-slate-400 text-xs uppercase tracking-wider">Kullanıcı</th>
+            <th class="px-4 py-3 text-left text-slate-400 text-xs uppercase tracking-wider">Kayıt</th>
+            <th class="px-4 py-3 text-left text-slate-400 text-xs uppercase tracking-wider">Son Giriş</th>
+            <th class="px-4 py-3 text-center text-slate-400 text-xs uppercase tracking-wider">Seviye</th>
+            <th class="px-4 py-3 text-center text-slate-400 text-xs uppercase tracking-wider">Puan</th>
+            <th class="px-4 py-3 text-center text-slate-400 text-xs uppercase tracking-wider">Cihaz</th>
+            <th class="px-4 py-3 text-right text-slate-400 text-xs uppercase tracking-wider">İşlemler</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          ${rows.join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
-/**
- * FIX HATA 17: try-catch.
- */
-async function renderDevices() {
-  const pane = document.getElementById('admin-pane-devices');
-  if (!pane) return;
-  pane.innerHTML = loadingHtml();
-
-  try {
-    const users = await getAllUsers();
-    const devices = [];
-    for (const [uid, user] of Object.entries(users || {})) {
-      if (user.devices) {
-        for (const [did, dev] of Object.entries(user.devices)) {
-          devices.push({ uid, username: user.profile?.username, ...dev, did });
-        }
-      }
-    }
-
-    if (devices.length === 0) {
-      pane.innerHTML = '<p class="text-slate-500 text-center py-8">Kayıtlı cihaz bulunamadı.</p>';
-      return;
-    }
-
-    pane.innerHTML = `
-      <div class="space-y-3">
-        ${devices.map(d => `
-          <div class="admin-card rounded-xl p-4 flex items-center justify-between gap-4">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center">
-                <i class="fas fa-laptop text-slate-400 text-sm"></i>
-              </div>
-              <div>
-                <div class="text-sm text-slate-200">${sanitize(d.username || 'Bilinmeyen')}</div>
-                <div class="text-xs text-slate-500">${sanitize(d.userAgent?.slice(0, 60) || 'N/A')}</div>
-              </div>
-            </div>
-            <div class="text-xs text-slate-500">${d.lastSeen ? new Date(d.lastSeen).toLocaleString('tr-TR') : 'N/A'}</div>
-          </div>`).join('')}
-      </div>`;
-  } catch (err) {
-    pane.innerHTML = errorHtml(err.message);
-    console.error('renderDevices error:', err);
-  }
-}
-
-/**
- * FIX HATA 17: try-catch.
- */
-async function renderAdminLogs() {
-  const pane = document.getElementById('admin-pane-logs');
-  if (!pane) return;
-  pane.innerHTML = loadingHtml();
-
-  try {
-    // Logs are stored locally or in Firebase depending on implementation
-    const users    = await getAllUsers();
-    const sessions = [];
-    for (const [uid, user] of Object.entries(users || {})) {
-      if (user.sessions) {
-        for (const [sid, s] of Object.entries(user.sessions)) {
-          sessions.push({ uid, username: user.profile?.username, ...s });
-        }
-      }
-    }
-    sessions.sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
-
-    if (sessions.length === 0) {
-      pane.innerHTML = '<p class="text-slate-500 text-center py-8">Kayıtlı oturum bulunamadı.</p>';
-      return;
-    }
-
-    pane.innerHTML = `
-      <div class="space-y-2 max-h-[60vh] overflow-y-auto scrollbar-thin">
-        ${sessions.slice(0, 50).map(s => `
-          <div class="admin-card rounded-xl px-4 py-3 flex items-center justify-between text-sm">
-            <div>
-              <span class="font-semibold text-slate-300">${sanitize(s.username || 'Bilinmeyen')}</span>
-              <span class="ml-2 text-slate-500">${s.startTime ? new Date(s.startTime).toLocaleString('tr-TR') : ''}</span>
-            </div>
-            <div class="flex gap-4 text-xs font-orbitron">
-              <span class="text-cyan-400">${s.score || 0}p</span>
-              <span class="text-green-400">${s.correctAnswers || 0}/${s.questionsAnswered || 0}</span>
-            </div>
-          </div>`).join('')}
-      </div>`;
-  } catch (err) {
-    pane.innerHTML = errorHtml(err.message);
-    console.error('renderAdminLogs error:', err);
-  }
-}
-
-// ─── Admin Actions ────────────────────────────────────────────
+// ─── EDIT USER MODAL ─────────────────────────────────────────────────────────
 window.adminEditUser = async function(uid) {
-  const subModal  = document.getElementById('adminSubModal');
-  const subContent = document.getElementById('adminSubContent');
-  if (!subModal || !subContent) return;
+  const users = await getAllUsers();
+  const user  = users[uid];
+  if (!user) return;
+  const p = user.profile;
+  const g = user.game?.stats || {};
+  const devices = await getUserDevices(uid);
 
-  subContent.innerHTML = loadingHtml();
-  subModal.classList.remove('hidden');
-  subModal.classList.add('flex');
+  const modal = document.getElementById('adminSubModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
 
-  try {
-    const user = await getUserProfile(uid);
-    const gs   = user?.gameStats || {};
-    subContent.innerHTML = `
-      <h2 class="font-orbitron text-lg text-yellow-400 mb-4">
-        <i class="fas fa-user-edit mr-2"></i>Kullanıcı Düzenle: ${sanitize(user?.profile?.username || uid)}
-      </h2>
-      <div class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-          ${adminStat('Puan', gs.totalScore || 0, 'cyan')}
-          ${adminStat('Level', gs.maxLevel || 1, 'yellow')}
-          ${adminStat('Streak', gs.maxStreak || 0, 'orange')}
-          ${adminStat('Oyun', gs.totalGamesPlayed || 0, 'purple')}
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">Biyografi</label>
-          <textarea id="editBio" class="game-input w-full px-3 py-2 rounded-xl text-sm resize-none" rows="2">${sanitize(user?.profile?.bio || '')}</textarea>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="window.adminSaveUser('${sanitize(uid)}')" class="flex-1 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm font-orbitron hover:bg-cyan-500/30">
-            <i class="fas fa-save mr-1"></i>Kaydet
-          </button>
-          <button onclick="document.getElementById('adminSubModal').classList.add('hidden'); document.getElementById('adminSubModal').classList.remove('flex');"
-            class="flex-1 py-2 rounded-xl bg-white/5 border border-white/10 text-slate-400 text-sm hover:bg-white/10">
-            Vazgeç
-          </button>
-        </div>
-      </div>`;
-  } catch (err) {
-    subContent.innerHTML = errorHtml(err.message);
-  }
+  modal.querySelector('#adminSubContent').innerHTML = `
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-orbitron text-xl text-cyan-400">Kullanıcı Düzenle: ${p.username}</h3>
+      <button onclick="document.getElementById('adminSubModal').classList.add('hidden')" class="text-slate-400 hover:text-white text-2xl">×</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="space-y-3">
+        <h4 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Profil Bilgileri</h4>
+        <label class="block text-xs text-slate-400">Kullanıcı Adı</label>
+        <input id="edit_username" value="${p.username}" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">E-posta</label>
+        <input id="edit_email" value="${p.email || ''}" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">Yeni Şifre (boş bırak = değiştirme)</label>
+        <input id="edit_password" type="password" placeholder="••••••" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">Durum</label>
+        <select id="edit_status" class="game-input w-full px-3 py-2 rounded-lg text-sm">
+          <option value="active" ${p.status === 'active' ? 'selected' : ''}>Aktif</option>
+          <option value="banned" ${p.status === 'banned' ? 'selected' : ''}>Yasaklı</option>
+        </select>
+      </div>
+      <div class="space-y-3">
+        <h4 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Oyun İstatistikleri</h4>
+        <label class="block text-xs text-slate-400">Toplam Puan</label>
+        <input id="edit_score" type="number" value="${g.totalScore || 0}" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">Mevcut Seviye</label>
+        <input id="edit_level" type="number" value="${g.currentLevel || 1}" min="1" max="20" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">Maks Streak</label>
+        <input id="edit_streak" type="number" value="${g.maxStreak || 0}" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+        <label class="block text-xs text-slate-400">Toplam Oyun</label>
+        <input id="edit_games" type="number" value="${g.totalGamesPlayed || 0}" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+      </div>
+    </div>
+
+    <div class="mb-6">
+      <h4 class="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">Cihaz Geçmişi</h4>
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs">
+          <thead><tr class="border-b border-white/10">
+            <th class="text-left text-slate-400 py-2 pr-4">Browser</th>
+            <th class="text-left text-slate-400 py-2 pr-4">OS</th>
+            <th class="text-left text-slate-400 py-2 pr-4">IP</th>
+            <th class="text-left text-slate-400 py-2 pr-4">Son Giriş</th>
+            <th class="text-left text-slate-400 py-2">İşlem</th>
+          </tr></thead>
+          <tbody>
+            ${Object.entries(devices).map(([devKey, dev]) => `
+              <tr class="border-b border-white/5">
+                <td class="py-2 pr-4 text-slate-300">${dev.browser || '—'}</td>
+                <td class="py-2 pr-4 text-slate-300">${dev.os || '—'}</td>
+                <td class="py-2 pr-4 text-slate-400">${dev.ipAddress || '—'}</td>
+                <td class="py-2 pr-4 text-slate-400">${fmtTime(dev.lastLogin)}</td>
+                <td class="py-2">
+                  <button onclick="window.adminBanDev('${uid}','${devKey}',${!dev.isBanned})"
+                    class="text-xs px-2 py-1 rounded border ${dev.isBanned ? 'text-green-400 border-green-500/30' : 'text-red-400 border-red-500/30'}">
+                    ${dev.isBanned ? 'Yasağı Kaldır' : 'Yasakla'}
+                  </button>
+                </td>
+              </tr>`).join('') || '<tr><td colspan="5" class="text-slate-500 py-2">Cihaz yok</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="flex gap-3 justify-end">
+      <button onclick="window.adminSaveUser('${uid}')"
+        class="px-6 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm font-semibold hover:bg-cyan-500/30">
+        <i class="fas fa-save mr-2"></i>Kaydet
+      </button>
+      <button onclick="window.adminDeleteUser('${uid}','${p.username}')"
+        class="px-6 py-2 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 text-sm font-semibold hover:bg-red-500/30">
+        <i class="fas fa-trash mr-2"></i>Hesabı Sil
+      </button>
+    </div>`;
 };
 
 window.adminSaveUser = async function(uid) {
-  const bio = document.getElementById('editBio')?.value?.trim();
-  try {
-    await updateUserProfile(uid, { bio });
-    document.getElementById('adminSubModal')?.classList.add('hidden');
-    document.getElementById('adminSubModal')?.classList.remove('flex');
-  } catch (err) {
-    alert('Kaydetme hatası: ' + err.message);
-  }
+  const updates = {
+    username: document.getElementById('edit_username').value,
+    email:    document.getElementById('edit_email').value,
+    status:   document.getElementById('edit_status').value,
+  };
+  const pw = document.getElementById('edit_password').value;
+  if (pw) updates.password = pw;
+
+  const gameStats = {
+    totalScore:       parseInt(document.getElementById('edit_score').value) || 0,
+    currentLevel:     parseInt(document.getElementById('edit_level').value) || 1,
+    maxStreak:        parseInt(document.getElementById('edit_streak').value) || 0,
+    totalGamesPlayed: parseInt(document.getElementById('edit_games').value) || 0,
+  };
+
+  await Promise.all([
+    updateUserProfile(uid, updates),
+    updateUserGameStats(uid, gameStats),
+  ]);
+  await logAdminAction('__admin__', 'edit_user', uid);
+
+  document.getElementById('adminSubModal').classList.add('hidden');
+  showAdminToast('Kullanıcı güncellendi ✓', 'green');
+  renderUsersList();
 };
 
-window.adminMessageUser = function(uid, username) {
-  const subject = prompt(`"${username}" kullanıcısına mesaj konusu:`);
-  if (!subject) return;
-  const body = prompt('Mesaj içeriği:');
-  if (!body) return;
-  // Message sending implementation via firebase-config
-  import('./firebase-config.js').then(({ sendMessageToUser }) => {
-    sendMessageToUser(uid, { subject, body }).then(() => {
-      alert('Mesaj gönderildi ✓');
-    }).catch(err => alert('Hata: ' + err.message));
+window.adminBanDev = async function(uid, devKey, banned) {
+  await banDevice(uid, devKey, banned);
+  await adminEditUser(uid);
+};
+
+window.adminDeleteUser = async function(uid, username) {
+  const confirmed = confirm(`"${username}" hesabını silmek istediğinizden emin misiniz?\nBu işlem geri alınamaz!`);
+  if (!confirmed) return;
+  await deleteUser(uid);
+  await logAdminAction('__admin__', 'delete_user', uid);
+  document.getElementById('adminSubModal')?.classList.add('hidden');
+  showAdminToast('Kullanıcı silindi.', 'red');
+  renderUsersList();
+};
+
+// ─── MESSAGES TAB ─────────────────────────────────────────────────────────────
+async function renderAdminMessages() {
+  const pane = document.getElementById('admin-pane-messages');
+
+  const users = await getAllUsers();
+  const userOptions = Object.entries(users)
+    .filter(([, u]) => u.profile)
+    .map(([uid, u]) => `<option value="${uid}">${u.profile.username}</option>`)
+    .join('');
+
+  // Get all sent messages from admin perspective
+  const sentMsgs = await getSentMessages('__admin__').catch(() => ({}));
+
+  pane.innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="admin-card p-5 rounded-xl">
+        <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">✉️ Mesaj Gönder</h3>
+        <div class="space-y-3">
+          <select id="msgToUser" class="game-input w-full px-3 py-2 rounded-lg text-sm">
+            <option value="">Kullanıcı seç...</option>
+            ${userOptions}
+          </select>
+          <input id="msgSubject" placeholder="Konu" class="game-input w-full px-3 py-2 rounded-lg text-sm" />
+          <textarea id="msgBody" rows="5" placeholder="Mesaj içeriği..." class="game-input w-full px-3 py-2 rounded-lg text-sm resize-none"></textarea>
+          <button onclick="window.adminSendMsg()" class="w-full py-2 rounded-xl bg-green-500/20 border border-green-500/40 text-green-300 text-sm font-semibold hover:bg-green-500/30">
+            <i class="fas fa-paper-plane mr-2"></i>Gönder
+          </button>
+        </div>
+      </div>
+      <div class="admin-card p-5 rounded-xl overflow-y-auto max-h-80">
+        <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">📤 Gönderilen Mesajlar</h3>
+        <div class="space-y-2" id="adminSentList">
+          ${Object.entries(sentMsgs).reverse().map(([, m]) => `
+            <div class="bg-white/5 rounded-lg p-3 text-xs border border-white/5">
+              <div class="flex justify-between mb-1">
+                <span class="text-green-400 font-semibold">→ ${m.toName || m.to}</span>
+                <span class="text-slate-500">${fmtTime(m.sentAt)}</span>
+              </div>
+              <div class="text-slate-300 font-medium mb-1">${m.subject}</div>
+              <div class="text-slate-400">${m.body?.substring(0, 100)}...</div>
+              ${m.reply ? `<div class="mt-2 pl-2 border-l-2 border-cyan-500/40 text-cyan-300">💬 ${m.reply}</div>` : ''}
+            </div>`).join('') || '<p class="text-slate-500 text-sm">Henüz mesaj gönderilmedi.</p>'}
+        </div>
+      </div>
+    </div>`;
+}
+
+window.adminMsgUser = function(uid, username) {
+  loadAdminTab('messages');
+  setTimeout(() => {
+    const sel = document.getElementById('msgToUser');
+    if (sel) sel.value = uid;
+  }, 500);
+};
+
+window.adminSendMsg = async function() {
+  const toUid   = document.getElementById('msgToUser').value;
+  const subject = document.getElementById('msgSubject').value.trim();
+  const body    = document.getElementById('msgBody').value.trim();
+  if (!toUid || !subject || !body) { showAdminToast('Tüm alanları doldurun.', 'red'); return; }
+
+  const users    = await getAllUsers();
+  const toName   = users[toUid]?.profile?.username || 'Kullanıcı';
+  await sendMessage('__admin__', toUid, subject, body, 'Admin (Halil)', toName);
+  await logAdminAction('__admin__', `send_message:${subject}`, toUid);
+
+  document.getElementById('msgSubject').value = '';
+  document.getElementById('msgBody').value    = '';
+  showAdminToast('Mesaj gönderildi ✓', 'green');
+  renderAdminMessages();
+};
+
+// ─── DEVICES TAB ─────────────────────────────────────────────────────────────
+async function renderDevices() {
+  const pane  = document.getElementById('admin-pane-devices');
+  pane.innerHTML = `<div class="flex items-center justify-center h-40 text-slate-400">
+    <i class="fas fa-spinner fa-spin mr-2"></i>Cihazlar yükleniyor...</div>`;
+
+  const users = await getAllUsers();
+  let rows = '';
+  for (const [uid, u] of Object.entries(users)) {
+    if (!u.profile) continue;
+    const devs = u.devices || {};
+    for (const [devKey, dev] of Object.entries(devs)) {
+      rows += `
+        <tr class="border-b border-white/5 hover:bg-white/3">
+          <td class="px-3 py-3 text-sm text-slate-200">${u.profile.username}</td>
+          <td class="px-3 py-3 text-xs text-slate-400 font-mono">${dev.deviceId || '—'}</td>
+          <td class="px-3 py-3 text-xs text-slate-300">${dev.browser || '—'}</td>
+          <td class="px-3 py-3 text-xs text-slate-300">${dev.os || '—'}</td>
+          <td class="px-3 py-3 text-xs text-slate-400">${dev.ipAddress || '—'}</td>
+          <td class="px-3 py-3 text-xs text-slate-400">${fmtTime(dev.lastLogin)}</td>
+          <td class="px-3 py-3 text-center">${dev.loginCount || 1}</td>
+          <td class="px-3 py-3 text-center">
+            <span class="text-xs px-2 py-1 rounded-full ${dev.isBanned ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'}">
+              ${dev.isBanned ? 'Yasaklı' : 'Aktif'}
+            </span>
+          </td>
+          <td class="px-3 py-3 text-center">
+            <button onclick="window.adminBanDev('${uid}','${devKey}',${!dev.isBanned})"
+              class="text-xs px-2 py-1 rounded border ${dev.isBanned ? 'text-green-400 border-green-500/30' : 'text-red-400 border-red-500/30'} hover:bg-white/5">
+              ${dev.isBanned ? 'Kaldır' : 'Yasakla'}
+            </button>
+          </td>
+        </tr>`;
+    }
+  }
+
+  pane.innerHTML = `
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="border-b border-white/10">
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">Kullanıcı</th>
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">Device ID</th>
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">Browser</th>
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">OS</th>
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">IP</th>
+          <th class="px-3 py-3 text-left text-slate-400 text-xs uppercase">Son Giriş</th>
+          <th class="px-3 py-3 text-center text-slate-400 text-xs uppercase">Giriş #</th>
+          <th class="px-3 py-3 text-center text-slate-400 text-xs uppercase">Durum</th>
+          <th class="px-3 py-3 text-center text-slate-400 text-xs uppercase">İşlem</th>
+        </tr></thead>
+        <tbody>${rows || '<tr><td colspan="9" class="text-slate-500 text-center py-8">Kayıtlı cihaz yok</td></tr>'}</tbody>
+      </table>
+    </div>`;
+}
+
+// ─── LOGS TAB ─────────────────────────────────────────────────────────────────
+async function renderAdminLogs() {
+  const pane = document.getElementById('admin-pane-logs');
+  const logs = await getAdminLogs();
+  const actions = Object.entries(logs.all_actions || {})
+    .sort((a, b) => b[1].timestamp - a[1].timestamp)
+    .slice(0, 50);
+
+  pane.innerHTML = `
+    <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4">📋 Son 50 Admin Eylemi</h3>
+    <div class="space-y-2 max-h-96 overflow-y-auto scrollbar-thin">
+      ${actions.map(([, a]) => `
+        <div class="bg-white/3 rounded-lg px-4 py-3 text-xs flex justify-between items-center border border-white/5">
+          <span class="text-purple-400 font-semibold">${a.admin}</span>
+          <span class="text-slate-300 mx-3">${a.action}</span>
+          ${a.target ? `<span class="text-cyan-400">${a.target}</span>` : ''}
+          <span class="text-slate-500 ml-auto">${fmtTime(a.timestamp)}</span>
+        </div>`).join('') || '<p class="text-slate-500">Log kaydı yok.</p>'}
+    </div>`;
+}
+
+// ─── GLOBAL HELPERS ───────────────────────────────────────────────────────────
+window.filterUserTable = function(q) {
+  const rows = document.querySelectorAll('#usersTableBody tr');
+  rows.forEach(r => {
+    r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
   });
 };
 
-window.adminSendBroadcast = async function() {
-  const subject = document.getElementById('msgSubject')?.value?.trim();
-  const body    = document.getElementById('msgBody')?.value?.trim();
-  if (!subject || !body) { alert('Konu ve içerik zorunlu.'); return; }
-
-  try {
-    const users = await getAllUsers();
-    const { sendMessageToUser } = await import('./firebase-config.js');
-    const sends = Object.keys(users).map(uid => sendMessageToUser(uid, { subject, body }).catch(() => {}));
-    await Promise.allSettled(sends);
-    alert(`${Object.keys(users).length} kullanıcıya mesaj gönderildi ✓`);
-    document.getElementById('msgSubject').value = '';
-    document.getElementById('msgBody').value    = '';
-  } catch (err) {
-    alert('Toplu gönderim hatası: ' + err.message);
-  }
-};
-
-// ─── Helpers ─────────────────────────────────────────────────
-function loadingHtml() {
-  return `<div class="flex items-center justify-center py-12">
-    <div class="w-8 h-8 border-4 border-yellow-500/30 border-t-yellow-500 rounded-full animate-spin"></div>
-    <span class="ml-3 text-slate-400 font-orbitron text-sm">Yükleniyor...</span>
-  </div>`;
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
-function errorHtml(msg) {
-  return `<div class="text-red-400 p-4 text-sm font-orbitron border border-red-500/20 rounded-xl bg-red-500/5">
-    <i class="fas fa-exclamation-triangle mr-2"></i>Hata: ${sanitize(msg)}
-  </div>`;
+function fmtTime(ts) {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 }
 
-function adminStat(label, value, color) {
-  const colors = { cyan: 'text-cyan-400', yellow: 'text-yellow-400', orange: 'text-orange-400', purple: 'text-purple-400', green: 'text-green-400' };
-  return `<div class="admin-card rounded-xl p-3 text-center">
-    <div class="font-orbitron text-lg font-black ${colors[color] || 'text-slate-300'} mb-1">${sanitize(String(value))}</div>
-    <div class="text-xs text-slate-500">${label}</div>
-  </div>`;
+function showAdminToast(msg, color = 'cyan') {
+  const c = document.getElementById('toastContainer');
+  if (!c) return;
+  const t = document.createElement('div');
+  const colors = { cyan: 'border-cyan-500/40 text-cyan-300', green: 'border-green-500/40 text-green-300', red: 'border-red-500/40 text-red-300' };
+  t.className = `glass-panel border ${colors[color] || colors.cyan} px-4 py-3 rounded-xl text-sm font-semibold pointer-events-auto`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
 }
