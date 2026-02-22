@@ -43,6 +43,558 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css" />
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       INLINE LANGUAGE SYSTEM — runs before DOM paint to avoid flicker
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    /* ────────────────────────────────────────────────────────────────────────
+       i18n TRANSLATION DICTIONARY
+       Keys matching data-i18n attributes in the HTML.
+       Supported locales: "de" (Deutsch) · "tr" (Türkçe)
+    ──────────────────────────────────────────────────────────────────────── */
+    const I18N = {
+
+      /* ── DEUTSCH ─────────────────────────────────────────────────────── */
+      de: {
+        /* Auth overlay */
+        login_title:              "Giriş Yap",
+        login_username:           "Kullanıcı Adı",
+        login_password:           "Şifre",
+        login_btn:                "Giriş Yap",
+        login_no_account:         "Hesabın yok mu?",
+        login_register:           "Kayıt Ol",
+        login_guest:              "Kayıt olmadan devam et (çevrimdışı)",
+        signup_title:             "Kayıt Ol",
+        signup_username:          "Kullanıcı Adı *",
+        signup_password:          "Şifre *",
+        signup_email:             "E-posta",
+        signup_email_optional:    "(isteğe bağlı)",
+        signup_btn:               "Kayıt Ol",
+        signup_have_account:      "Zaten hesabın var mı?",
+        signup_goto_login:        "Giriş Yap",
+
+        /* Firebase status */
+        fb_connecting:            "Bağlanıyor...",
+        fb_connecting_sub:        "Firebase ile bağlantı kuruluyor",
+        fb_error:                 "Firebase bağlantısı kurulamadı — firebase-config.js dosyasındaki ayarları kontrol et.",
+        fb_error_close:           "Kapat",
+
+        /* Crash screen */
+        crash_title:              "Kritischer Fehler",
+        crash_default:            "Ein unerwarteter Fehler ist aufgetreten.",
+        crash_restart:            "Neu starten",
+
+        /* Header */
+        header_subtitle:          "Schulden · Pro",
+        audio_toggle_title:       "Audio ein/aus",
+        rules_btn_label:          "Spielregeln",
+        lang_toggle_label:        "TR/DE",
+
+        /* Main tabs */
+        tab_game:                 "Spiel",
+        tab_stats:                "Statistiken",
+        tab_tickets:              "Tickets",
+        tab_leaderboard:          "Rangliste",
+        tab_friends:              "Freunde",
+
+        /* Level / score panel */
+        level_label:              "Level",
+        timer_label:              "Timer",
+        score_label:              "Punkte",
+
+        /* Player / computer cards */
+        you:                      "DU",
+        computer:                 "COMPUTER",
+        your_turn:                "DEIN ZUG",
+        computer_turn:            "COMPUTER ZUG",
+        your_turn_badge:          "DEIN ZUG",
+
+        /* Instruction words */
+        nehmen:                   "NEHMEN",
+        abgeben:                  "ABGEBEN",
+        positiv:                  "POSITIV",
+        negativ:                  "NEGATIV",
+
+        /* Input area */
+        your_expression:          "DEIN AUSDRUCK",
+        new_balance:              "NEUER STAND",
+        check:                    "PRÜFEN",
+        computer_thinking:        "COMPUTER DENKT",
+
+        /* Game log & achievements */
+        game_log:                 "Spiellog",
+        achievements:             "Erfolge",
+
+        /* New game btn */
+        new_game:                 "Neues Spiel",
+
+        /* Stats tab */
+        total_correct:            "Richtig",
+        accuracy:                 "Genauigkeit",
+        best_streak:              "Beststreak",
+        accuracy_chart:           "Genauigkeit",
+        operations_chart:         "Operationen",
+        heatmap_title:            "Aktivitätsheatmap",
+        reset_stats:              "Statistiken zurücksetzen",
+
+        /* Tickets tab */
+        ticket_stack_title:       "Visueller Ticket-Stack",
+        ticket_stack_desc:        "Beobachte, wie Tickets in dein Konto fließen oder abgehen.",
+        your_stack:               "Dein Ticket-Stack",
+        simulate:                 "Simulation",
+        last_op:                  "Letzte Operation",
+        stack_empty:              "Noch keine Tickets",
+
+        /* Leaderboard tab */
+        leaderboard_title:        "Rangliste",
+
+        /* Friends tab */
+        friends_title:            "Freunde",
+
+        /* Rules modal */
+        rules_title:              "Spielregeln",
+        rules_subtitle:           "Verstehe die Magie hinter positiven und negativen Zahlen.",
+        rules_concept:            "Das Grundprinzip",
+        rules_concept_text:       "Stell dir vor, du hast zwei Arten von Tickets: Positive Tickets (+1€) und Negative Tickets (-1€). Dein Kontostand bestimmt sich durch die Summe aller Tickets, die du besitzt.",
+        rules_math_rule:          "Die Mathematische Regel",
+        start_game:               "Spiel starten!",
+        magic_label:              "✨ Magie!",
+
+        /* Teacher modal */
+        teacher_title:            "🎓 Lehrermodus",
+        teacher_min:              "Min. Zahl",
+        teacher_max:              "Max. Zahl",
+        teacher_timer:            "Timer",
+        teacher_timer_off:        "Aus",
+        teacher_cheat:            "Spickzettel (Antwort anzeigen)",
+        teacher_level:            "Level fixieren",
+        teacher_level_auto:       "Auto (nach Streak)",
+        teacher_level_0:          "Anfänger (1–5)",
+        teacher_level_1:          "Einsteiger (1–10)",
+        teacher_level_2:          "Fortgeschritten (1–20)",
+        teacher_level_3:          "Profi (1–50)",
+        teacher_level_4:          "Experte (1–100)",
+        teacher_apply:            "Anwenden & Spielen",
+
+        /* Profile overlay */
+        profile_title:            "Profil",
+
+        /* Admin panel */
+        admin_title:              "Admin Paneli",
+        admin_subtitle:           "Guthaben-Schulden-Spiel · Verwaltung",
+        admin_tab_stats:          "Statistiken",
+        admin_tab_users:          "Benutzer",
+        admin_tab_messages:       "Nachrichten",
+        admin_tab_devices:        "Geräte",
+        admin_tab_logs:           "Logs",
+
+        /* Inbox modal */
+        inbox_title:              "Neue Nachricht",
+        inbox_subtitle:           "Beim Einloggen wartet eine Nachricht auf dich",
+        inbox_from:               "Von:",
+        inbox_date:               "Datum:",
+        inbox_reply_placeholder:  "Antworten…",
+        inbox_reply_btn:          "Senden",
+
+        /* Notification panel */
+        notif_placeholder:        "Keine Benachrichtigungen",
+
+        /* Footer */
+        footer_copy:              "Guthaben-Schulden-Spiel – Pro Edition © 2026",
+        footer_made_with:         "Made with",
+        footer_by:                "by",
+        footer_edition:           "Firebase Edition ✦",
+
+        /* Cheat overlay */
+        cheat_answer_label:       "Antwort:",
+
+        /* Feedback generic */
+        feedback_correct:         "Richtig!",
+        feedback_wrong:           "Falsch!",
+
+        /* Level names */
+        lvl_anfanger:             "Anfänger",
+        lvl_einsteiger:           "Einsteiger",
+        lvl_fortgeschritten:      "Fortgeschritten",
+        lvl_profi:                "Profi",
+        lvl_experte:              "Experte",
+
+        /* Progress */
+        progress_until:           "bis Level",
+
+        /* Tickets legend */
+        positive_tickets:         "Positive Tickets",
+        negative_tickets:         "Negative Tickets",
+
+        /* Scenario card labels */
+        scenario_nehmen_pos:      "„Nehmen 3 Positive Tickets"",
+        scenario_nehmen_neg:      "„Nehmen 4 Negative Tickets"",
+        scenario_abgeben_pos:     "„Abgeben 2 Positive Tickets"",
+        scenario_abgeben_neg:     "„Abgeben 5 Negative Tickets"",
+
+        /* Stats reset */
+        reset_confirm:            "Statistiken wirklich zurücksetzen?",
+
+        /* Misc */
+        loading:                  "Lädt…",
+        offline_mode:             "Offline-Modus",
+        save_success:             "Gespeichert ✓",
+        save_error:               "Speicherfehler!",
+      },
+
+      /* ── TÜRKÇE ──────────────────────────────────────────────────────── */
+      tr: {
+        /* Auth overlay */
+        login_title:              "Giriş Yap",
+        login_username:           "Kullanıcı Adı",
+        login_password:           "Şifre",
+        login_btn:                "Giriş Yap",
+        login_no_account:         "Hesabın yok mu?",
+        login_register:           "Kayıt Ol",
+        login_guest:              "Kayıt olmadan devam et (çevrimdışı)",
+        signup_title:             "Kayıt Ol",
+        signup_username:          "Kullanıcı Adı *",
+        signup_password:          "Şifre *",
+        signup_email:             "E-posta",
+        signup_email_optional:    "(isteğe bağlı)",
+        signup_btn:               "Kayıt Ol",
+        signup_have_account:      "Zaten hesabın var mı?",
+        signup_goto_login:        "Giriş Yap",
+
+        /* Firebase status */
+        fb_connecting:            "Bağlanıyor...",
+        fb_connecting_sub:        "Firebase ile bağlantı kuruluyor",
+        fb_error:                 "Firebase bağlantısı kurulamadı — firebase-config.js dosyasındaki ayarları kontrol et.",
+        fb_error_close:           "Kapat",
+
+        /* Crash screen */
+        crash_title:              "Kritik Hata",
+        crash_default:            "Beklenmeyen bir hata oluştu.",
+        crash_restart:            "Yeniden Başlat",
+
+        /* Header */
+        header_subtitle:          "Borçlar · Pro",
+        audio_toggle_title:       "Ses aç/kapat",
+        rules_btn_label:          "Oyun Kuralları",
+        lang_toggle_label:        "TR/DE",
+
+        /* Main tabs */
+        tab_game:                 "Oyun",
+        tab_stats:                "İstatistikler",
+        tab_tickets:              "Biletler",
+        tab_leaderboard:          "Sıralama",
+        tab_friends:              "Arkadaşlar",
+
+        /* Level / score panel */
+        level_label:              "Seviye",
+        timer_label:              "Zamanlayıcı",
+        score_label:              "Puan",
+
+        /* Player / computer cards */
+        you:                      "SEN",
+        computer:                 "BİLGİSAYAR",
+        your_turn:                "SENİN SIRAN",
+        computer_turn:            "BİLGİSAYAR SIRASI",
+        your_turn_badge:          "SENİN SIRAN",
+
+        /* Instruction words */
+        nehmen:                   "AL",
+        abgeben:                  "VER",
+        positiv:                  "POZİTİF",
+        negativ:                  "NEGATİF",
+
+        /* Input area */
+        your_expression:          "İFADELERİN",
+        new_balance:              "YENİ BAKİYE",
+        check:                    "KONTROL ET",
+        computer_thinking:        "BİLGİSAYAR DÜŞÜNÜYOR",
+
+        /* Game log & achievements */
+        game_log:                 "Oyun Günlüğü",
+        achievements:             "Başarımlar",
+
+        /* New game btn */
+        new_game:                 "Yeni Oyun",
+
+        /* Stats tab */
+        total_correct:            "Doğru",
+        accuracy:                 "Doğruluk",
+        best_streak:              "En İyi Seri",
+        accuracy_chart:           "Doğruluk",
+        operations_chart:         "İşlemler",
+        heatmap_title:            "Aktivite Isı Haritası",
+        reset_stats:              "İstatistikleri Sıfırla",
+
+        /* Tickets tab */
+        ticket_stack_title:       "Görsel Bilet Yığını",
+        ticket_stack_desc:        "Biletlerin hesabına nasıl girip çıktığını izle.",
+        your_stack:               "Bilet Yığınınız",
+        simulate:                 "Simülasyon",
+        last_op:                  "Son İşlem",
+        stack_empty:              "Henüz bilet yok",
+
+        /* Leaderboard tab */
+        leaderboard_title:        "Sıralama Tablosu",
+
+        /* Friends tab */
+        friends_title:            "Arkadaşlar",
+
+        /* Rules modal */
+        rules_title:              "Oyun Kuralları",
+        rules_subtitle:           "Pozitif ve negatif sayıların arkasındaki sihri anla.",
+        rules_concept:            "Temel Prensip",
+        rules_concept_text:       "İki tür biletin olduğunu hayal et: Pozitif Biletler (+1€) ve Negatif Biletler (-1€). Bakiyen, sahip olduğun tüm biletlerin toplamıyla belirlenir.",
+        rules_math_rule:          "Matematiksel Kural",
+        start_game:               "Oyunu Başlat!",
+        magic_label:              "✨ Sihir!",
+
+        /* Teacher modal */
+        teacher_title:            "🎓 Öğretmen Modu",
+        teacher_min:              "Min. Sayı",
+        teacher_max:              "Max. Sayı",
+        teacher_timer:            "Zamanlayıcı",
+        teacher_timer_off:        "Kapalı",
+        teacher_cheat:            "Kopya Kağıdı (Cevabı göster)",
+        teacher_level:            "Seviyeyi kilitle",
+        teacher_level_auto:       "Otomatik (Seriye göre)",
+        teacher_level_0:          "Başlangıç (1–5)",
+        teacher_level_1:          "Kolay (1–10)",
+        teacher_level_2:          "Orta (1–20)",
+        teacher_level_3:          "Zor (1–50)",
+        teacher_level_4:          "Uzman (1–100)",
+        teacher_apply:            "Uygula & Oyna",
+
+        /* Profile overlay */
+        profile_title:            "Profil",
+
+        /* Admin panel */
+        admin_title:              "Admin Paneli",
+        admin_subtitle:           "Guthaben-Schulden-Spiel · Yönetim",
+        admin_tab_stats:          "İstatistikler",
+        admin_tab_users:          "Kullanıcılar",
+        admin_tab_messages:       "Mesajlar",
+        admin_tab_devices:        "Cihazlar",
+        admin_tab_logs:           "Loglar",
+
+        /* Inbox modal */
+        inbox_title:              "Yeni Mesaj",
+        inbox_subtitle:           "Giriş yapınca seni bekleyen bir mesaj var",
+        inbox_from:               "Gönderen:",
+        inbox_date:               "Tarih:",
+        inbox_reply_placeholder:  "Yanıtla...",
+        inbox_reply_btn:          "Gönder",
+
+        /* Notification panel */
+        notif_placeholder:        "Bildirim yok",
+
+        /* Footer */
+        footer_copy:              "Guthaben-Schulden-Spiel – Pro Edition © 2026",
+        footer_made_with:         "Made with",
+        footer_by:                "by",
+        footer_edition:           "Firebase Edition ✦",
+
+        /* Cheat overlay */
+        cheat_answer_label:       "Cevap:",
+
+        /* Feedback generic */
+        feedback_correct:         "Doğru!",
+        feedback_wrong:           "Yanlış!",
+
+        /* Level names */
+        lvl_anfanger:             "Başlangıç",
+        lvl_einsteiger:           "Kolay",
+        lvl_fortgeschritten:      "Orta",
+        lvl_profi:                "Zor",
+        lvl_experte:              "Uzman",
+
+        /* Progress */
+        progress_until:           "Seviye için",
+
+        /* Tickets legend */
+        positive_tickets:         "Pozitif Biletler",
+        negative_tickets:         "Negatif Biletler",
+
+        /* Scenario card labels */
+        scenario_nehmen_pos:      "„3 Pozitif Bilet Al"",
+        scenario_nehmen_neg:      "„4 Negatif Bilet Al"",
+        scenario_abgeben_pos:     "„2 Pozitif Bilet Ver"",
+        scenario_abgeben_neg:     "„5 Negatif Bilet Ver"",
+
+        /* Stats reset */
+        reset_confirm:            "İstatistikler gerçekten sıfırlansın mı?",
+
+        /* Misc */
+        loading:                  "Yükleniyor…",
+        offline_mode:             "Çevrimdışı Mod",
+        save_success:             "Kaydedildi ✓",
+        save_error:               "Kayıt Hatası!",
+      }
+    };
+
+    /* ────────────────────────────────────────────────────────────────────────
+       LANGUAGE AUTO-DETECTION ENGINE
+       Priority:  1) localStorage preference  2) browser navigator.language
+       Fallback:  "de" (Deutsch)
+    ──────────────────────────────────────────────────────────────────────── */
+    const LangEngine = (() => {
+
+      /** Resolve a raw BCP-47 tag to either "tr" or "de" (default). */
+      function resolveLocale(rawTag) {
+        if (!rawTag) return 'de';
+        const tag = rawTag.toLowerCase();
+        /* Turkish: tr, tr-TR, tr-CY, az (Azerbaijani is close enough), … */
+        if (tag.startsWith('tr') || tag.startsWith('az')) return 'tr';
+        /* German: de, de-DE, de-AT, de-CH, de-LI, de-LU */
+        if (tag.startsWith('de')) return 'de';
+        /* For all other languages default to German (game is DE-based) */
+        return 'de';
+      }
+
+      /** Read persisted user preference from localStorage. */
+      function storedLocale() {
+        try {
+          return localStorage.getItem('gss_lang') || null;
+        } catch { return null; }
+      }
+
+      /** Persist user preference to localStorage. */
+      function saveLocale(lang) {
+        try { localStorage.setItem('gss_lang', lang); } catch { /* ignore */ }
+      }
+
+      /** Detect from browser — checks navigator.language and navigator.languages. */
+      function detectBrowserLocale() {
+        const langs = (navigator.languages && navigator.languages.length)
+          ? [...navigator.languages]
+          : [navigator.language || navigator.userLanguage || 'de'];
+
+        /* Walk the preference list; stop at first recognised locale. */
+        for (const l of langs) {
+          const resolved = resolveLocale(l);
+          if (resolved === 'tr') return 'tr'; /* explicit Turkish found */
+          if (l.toLowerCase().startsWith('de')) return 'de';
+        }
+        return 'de'; /* fallback */
+      }
+
+      /** Current active locale (reactive via applyLocale). */
+      let _current = 'de';
+
+      /** Translate a single key. */
+      function t(key) {
+        return (I18N[_current] && I18N[_current][key]) ? I18N[_current][key]
+             : (I18N['de'][key]  || key);
+      }
+
+      /**
+       * Walk the DOM and update every element with data-i18n / data-i18n-*
+       * attributes. Runs after DOMContentLoaded.
+       */
+      function applyLocale(lang) {
+        _current = lang;
+        /* Update <html lang="…"> */
+        document.documentElement.lang = lang === 'tr' ? 'tr' : 'de';
+
+        /* ── data-i18n → textContent ── */
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          const val = t(key);
+          if (val) el.textContent = val;
+        });
+
+        /* ── data-i18n-placeholder → placeholder attr ── */
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          const val = t(key);
+          if (val) el.placeholder = val;
+        });
+
+        /* ── data-i18n-title → title attr ── */
+        document.querySelectorAll('[data-i18n-title]').forEach(el => {
+          const key = el.getAttribute('data-i18n-title');
+          const val = t(key);
+          if (val) el.title = val;
+        });
+
+        /* ── data-i18n-aria → aria-label attr ── */
+        document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+          const key = el.getAttribute('data-i18n-aria');
+          const val = t(key);
+          if (val) el.setAttribute('aria-label', val);
+        });
+
+        /* ── data-i18n-value → value attr (for <option>, <input>) ── */
+        document.querySelectorAll('[data-i18n-value]').forEach(el => {
+          const key = el.getAttribute('data-i18n-value');
+          const val = t(key);
+          if (val) el.value = val;
+        });
+
+        /* ── Update lang toggle badge ── */
+        const badge = document.getElementById('langToggle');
+        if (badge) badge.textContent = lang === 'tr' ? 'TR/DE' : 'TR/DE';
+
+        /* Dispatch custom event so app.js can react if needed */
+        document.dispatchEvent(new CustomEvent('localeChanged', { detail: { lang } }));
+      }
+
+      /** Toggle between de ↔ tr and persist. */
+      function toggle() {
+        const next = _current === 'de' ? 'tr' : 'de';
+        saveLocale(next);
+        applyLocale(next);
+        return next;
+      }
+
+      /** Initialise: detect or restore locale, then apply. */
+      function init() {
+        const stored   = storedLocale();
+        const detected = detectBrowserLocale();
+        const locale   = stored || detected;
+        applyLocale(locale);
+        console.info(`[i18n] locale="${locale}" source="${stored ? 'localStorage' : 'browser'}" (browser="${detected}")`);
+      }
+
+      return { init, toggle, t, applyLocale, get current() { return _current; } };
+    })();
+
+    /* Expose globally so app.js and inline handlers can call window.Lang.t() */
+    window.Lang = LangEngine;
+
+    /* Run auto-detection as early as possible (before DOMContentLoaded)
+       to minimise layout shift. A full DOM pass follows after load. */
+    (() => {
+      /* Quick pass: only lang attr & html element to avoid FOUC */
+      const stored  = (() => { try { return localStorage.getItem('gss_lang'); } catch { return null; } })();
+      const browser = (() => {
+        const langs = navigator.languages && navigator.languages.length
+          ? [...navigator.languages] : [navigator.language || 'de'];
+        for (const l of langs) {
+          if (l.toLowerCase().startsWith('tr') || l.toLowerCase().startsWith('az')) return 'tr';
+          if (l.toLowerCase().startsWith('de')) return 'de';
+        }
+        return 'de';
+      })();
+      document.documentElement.lang = (stored || browser) === 'tr' ? 'tr' : 'de';
+    })();
+
+    /* Full i18n pass after DOM is ready */
+    document.addEventListener('DOMContentLoaded', () => {
+      LangEngine.init();
+
+      /* Wire the lang toggle button */
+      const btn = document.getElementById('langToggle');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          LangEngine.toggle();
+          /* small pulse animation */
+          btn.style.transform = 'scale(1.15)';
+          setTimeout(() => { btn.style.transform = ''; }, 180);
+        });
+      }
+    });
+  </script>
 </head>
 
 <body class="bg-game-bg font-rajdhani text-slate-200 min-h-screen overflow-x-hidden">
@@ -59,9 +611,9 @@
 <div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/95 backdrop-blur-xl">
   <div class="text-center">
     <div class="mb-4 text-5xl">🔥</div>
-    <div class="font-orbitron text-xl text-cyan-400 mb-3">Bağlanıyor...</div>
+    <div class="font-orbitron text-xl text-cyan-400 mb-3" data-i18n="fb_connecting">Bağlanıyor...</div>
     <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
-    <p class="text-slate-500 text-sm mt-4">Firebase ile bağlantı kuruluyor</p>
+    <p class="text-slate-500 text-sm mt-4" data-i18n="fb_connecting_sub">Firebase ile bağlantı kuruluyor</p>
   </div>
 </div>
 
@@ -70,8 +622,8 @@
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="fbErrorBanner" class="hidden fixed top-0 inset-x-0 z-[150] px-4 py-3 bg-red-900/80 border-b border-red-500/40 backdrop-blur-sm text-center text-sm">
   <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
-  <span class="text-red-300">Firebase bağlantısı kurulamadı — <strong>firebase-config.js</strong> dosyasındaki ayarları kontrol et.</span>
-  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Kapat</button>
+  <span class="text-red-300" data-i18n="fb_error">Firebase bağlantısı kurulamadı — <strong>firebase-config.js</strong> dosyasındaki ayarları kontrol et.</span>
+  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')" data-i18n="fb_error_close">Kapat</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -90,18 +642,19 @@
 
     <!-- LOGIN PANEL -->
     <div id="loginPanel" class="glass-panel rounded-2xl p-8 border border-white/10">
-      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Giriş Yap</h2>
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center" data-i18n="login_title">Giriş Yap</h2>
       <form id="loginForm" class="space-y-4">
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider" data-i18n="login_username">Kullanıcı Adı</label>
           <div class="relative">
             <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="loginUsername" type="text" required placeholder="kullanici_adi"
+            <input id="loginUsername" type="text" required data-i18n-placeholder="login_username"
+              placeholder="kullanici_adi"
               class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider" data-i18n="login_password">Şifre</label>
           <div class="relative">
             <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input id="loginPassword" type="password" required placeholder="••••••••"
@@ -110,25 +663,26 @@
         </div>
         <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
         <button id="loginBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
-          <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
+          <i class="fas fa-sign-in-alt mr-2"></i><span data-i18n="login_btn">Giriş Yap</span>
         </button>
       </form>
       <div class="mt-6 text-center space-y-3">
-        <p class="text-slate-500 text-sm">Hesabın yok mu?
-          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Kayıt Ol</button>
+        <p class="text-slate-500 text-sm">
+          <span data-i18n="login_no_account">Hesabın yok mu?</span>
+          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold" data-i18n="login_register">Kayıt Ol</button>
         </p>
         <button id="guestPlayBtn" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
-          <i class="fas fa-ghost mr-1"></i>Kayıt olmadan devam et (çevrimdışı)
+          <i class="fas fa-ghost mr-1"></i><span data-i18n="login_guest">Kayıt olmadan devam et (çevrimdışı)</span>
         </button>
       </div>
     </div>
 
     <!-- SIGNUP PANEL -->
     <div id="signupPanel" class="hidden glass-panel rounded-2xl p-8 border border-white/10">
-      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Kayıt Ol</h2>
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center" data-i18n="signup_title">Kayıt Ol</h2>
       <form id="signupForm" class="space-y-4">
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı *</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider" data-i18n="signup_username">Kullanıcı Adı *</label>
           <div class="relative">
             <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input id="signupUsername" type="text" required placeholder="benzersiz_adin"
@@ -136,7 +690,7 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre *</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider" data-i18n="signup_password">Şifre *</label>
           <div class="relative">
             <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input id="signupPassword" type="password" required placeholder="En az 6 karakter"
@@ -144,7 +698,10 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-posta <span class="text-slate-600">(isteğe bağlı)</span></label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
+            <span data-i18n="signup_email">E-posta</span>
+            <span class="text-slate-600" data-i18n="signup_email_optional">(isteğe bağlı)</span>
+          </label>
           <div class="relative">
             <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input id="signupEmail" type="email" placeholder="ornek@email.com"
@@ -153,12 +710,13 @@
         </div>
         <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
         <button id="signupBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
-          <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
+          <i class="fas fa-user-plus mr-2"></i><span data-i18n="signup_btn">Kayıt Ol</span>
         </button>
       </form>
       <div class="mt-6 text-center">
-        <p class="text-slate-500 text-sm">Zaten hesabın var mı?
-          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Giriş Yap</button>
+        <p class="text-slate-500 text-sm">
+          <span data-i18n="signup_have_account">Zaten hesabın var mı?</span>
+          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold" data-i18n="signup_goto_login">Giriş Yap</button>
         </p>
       </div>
     </div>
@@ -171,10 +729,10 @@
 <div id="crashScreen" class="fixed inset-0 z-[999] hidden flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
   <div class="text-center p-8 max-w-md">
     <div class="text-6xl mb-4">⚠️</div>
-    <h2 class="font-orbitron text-2xl text-red-400 mb-3">Kritischer Fehler</h2>
-    <p id="crashMessage" class="text-slate-300 mb-6">Ein unerwarteter Fehler ist aufgetreten.</p>
+    <h2 class="font-orbitron text-2xl text-red-400 mb-3" data-i18n="crash_title">Kritischer Fehler</h2>
+    <p id="crashMessage" class="text-slate-300 mb-6" data-i18n="crash_default">Ein unerwarteter Fehler ist aufgetreten.</p>
     <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
-      <i class="fas fa-redo mr-2"></i>Neu starten
+      <i class="fas fa-redo mr-2"></i><span data-i18n="crash_restart">Neu starten</span>
     </button>
   </div>
 </div>
@@ -205,18 +763,25 @@
         <i class="fas fa-envelope text-yellow-400"></i>
       </div>
       <div>
-        <div class="font-orbitron text-sm text-yellow-400">Yeni Mesaj</div>
-        <div class="text-xs text-slate-500">Giriş yapınca seni bekleyen bir mesaj var</div>
+        <div class="font-orbitron text-sm text-yellow-400" data-i18n="inbox_title">Yeni Mesaj</div>
+        <div class="text-xs text-slate-500" data-i18n="inbox_subtitle">Giriş yapınca seni bekleyen bir mesaj var</div>
       </div>
     </div>
-    <div class="mb-2 text-xs text-slate-500">Gönderen: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
-    <div class="mb-1 text-xs text-slate-500">Tarih: <span id="inboxMsgDate" class="text-slate-400"></span></div>
+    <div class="mb-2 text-xs text-slate-500">
+      <span data-i18n="inbox_from">Gönderen:</span>
+      <span id="inboxMsgFrom" class="text-slate-300"></span>
+    </div>
+    <div class="mb-1 text-xs text-slate-500">
+      <span data-i18n="inbox_date">Tarih:</span>
+      <span id="inboxMsgDate" class="text-slate-400"></span>
+    </div>
     <h3 id="inboxMsgSubject" class="font-orbitron text-lg text-slate-200 my-3"></h3>
     <p id="inboxMsgBody" class="text-slate-300 text-sm leading-relaxed mb-5 p-4 bg-white/5 rounded-xl border border-white/5"></p>
     <div class="flex gap-3">
-      <textarea id="inboxReplyInput" rows="2" placeholder="Yanıtla..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
+      <textarea id="inboxReplyInput" rows="2" data-i18n-placeholder="inbox_reply_placeholder"
+        placeholder="Yanıtla..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
       <button id="inboxReplyBtn" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
-        <i class="fas fa-reply mr-1"></i>Gönder
+        <i class="fas fa-reply mr-1"></i><span data-i18n="inbox_reply_btn">Gönder</span>
       </button>
     </div>
   </div>
@@ -231,7 +796,7 @@
       <i class="fas fa-times"></i>
     </button>
     <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
-      <i class="fas fa-user-circle mr-2"></i>Profil
+      <i class="fas fa-user-circle mr-2"></i><span data-i18n="profile_title">Profil</span>
     </h2>
     <div id="profileContent"></div>
   </div>
@@ -249,8 +814,8 @@
           <i class="fas fa-shield-alt text-yellow-400"></i>
         </div>
         <div>
-          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin Paneli</h2>
-          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Yönetim</p>
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400" data-i18n="admin_title">Admin Paneli</h2>
+          <p class="text-xs text-slate-500" data-i18n="admin_subtitle">Guthaben-Schulden-Spiel · Yönetim</p>
         </div>
       </div>
       <button id="closeAdminBtn" class="text-slate-400 hover:text-white text-2xl transition-colors">
@@ -261,19 +826,19 @@
     <!-- Admin Tabs -->
     <div class="flex gap-1 px-6 pt-4 border-b border-white/5 overflow-x-auto scrollbar-thin pb-0">
       <button class="admin-tab-btn active-admin-tab" data-tab="stats">
-        <i class="fas fa-chart-bar mr-2"></i>İstatistikler
+        <i class="fas fa-chart-bar mr-2"></i><span data-i18n="admin_tab_stats">İstatistikler</span>
       </button>
       <button class="admin-tab-btn" data-tab="users">
-        <i class="fas fa-users mr-2"></i>Kullanıcılar
+        <i class="fas fa-users mr-2"></i><span data-i18n="admin_tab_users">Kullanıcılar</span>
       </button>
       <button class="admin-tab-btn" data-tab="messages">
-        <i class="fas fa-envelope mr-2"></i>Mesajlar
+        <i class="fas fa-envelope mr-2"></i><span data-i18n="admin_tab_messages">Mesajlar</span>
       </button>
       <button class="admin-tab-btn" data-tab="devices">
-        <i class="fas fa-laptop mr-2"></i>Cihazlar
+        <i class="fas fa-laptop mr-2"></i><span data-i18n="admin_tab_devices">Cihazlar</span>
       </button>
       <button class="admin-tab-btn" data-tab="logs">
-        <i class="fas fa-history mr-2"></i>Loglar
+        <i class="fas fa-history mr-2"></i><span data-i18n="admin_tab_logs">Loglar</span>
       </button>
     </div>
 
@@ -304,7 +869,7 @@
 <div id="rulesModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="modal-backdrop absolute inset-0" id="rulesBackdrop"></div>
   <div class="modal-content glass-panel relative z-10 max-w-3xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
-    <button id="closeRules" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" aria-label="Schließen">
+    <button id="closeRules" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" data-i18n-aria="rules_btn_label">
       <i class="fas fa-times"></i>
     </button>
     <h2 id="rulesTitle" class="font-orbitron text-3xl font-bold text-cyan-400 mb-2 neon-text">
@@ -317,48 +882,54 @@
         <i class="fas fa-lightbulb mr-2 text-yellow-400"></i><span data-i18n="rules_concept">Das Grundprinzip</span>
       </h3>
       <p class="text-slate-300 leading-relaxed mb-4" data-i18n="rules_concept_text">
-        Stell dir vor, du hast zwei Arten von Tickets: <span class="text-green-400 font-semibold">Positive Tickets (+1€)</span> und <span class="text-red-400 font-semibold">Negative Tickets (-1€)</span>.
+        Stell dir vor, du hast zwei Arten von Tickets: Positive Tickets (+1€) und Negative Tickets (-1€).
         Dein Kontostand bestimmt sich durch die Summe aller Tickets, die du besitzt.
       </p>
     </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <!-- Scenario 1: nehmen positiv -->
       <div class="scenario-card p-5 rounded-xl border border-green-500/30 bg-green-500/5">
         <div class="flex items-center gap-2 mb-3">
           <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
           <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Nehmen 3 Positive Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2" data-i18n="scenario_nehmen_pos">„Nehmen 3 Positive Tickets"</p>
         <div class="math-display">+(+3) = <span class="text-green-400">+3</span></div>
       </div>
+      <!-- Scenario 2: nehmen negativ -->
       <div class="scenario-card p-5 rounded-xl border border-red-500/30 bg-red-500/5">
         <div class="flex items-center gap-2 mb-3">
           <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
           <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Nehmen 4 Negative Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2" data-i18n="scenario_nehmen_neg">„Nehmen 4 Negative Tickets"</p>
         <div class="math-display">+(-4) = <span class="text-red-400">-4</span></div>
       </div>
+      <!-- Scenario 3: abgeben positiv -->
       <div class="scenario-card p-5 rounded-xl border border-orange-500/30 bg-orange-500/5">
         <div class="flex items-center gap-2 mb-3">
           <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
           <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Abgeben 2 Positive Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2" data-i18n="scenario_abgeben_pos">„Abgeben 2 Positive Tickets"</p>
         <div class="math-display">-(+2) = <span class="text-red-400">-2</span></div>
       </div>
+      <!-- Scenario 4: abgeben negativ (magic) -->
       <div class="scenario-card p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 relative overflow-hidden">
-        <div class="absolute top-2 right-2 text-xs text-purple-300 bg-purple-500/20 px-2 py-1 rounded-full">✨ Magie!</div>
+        <div class="absolute top-2 right-2 text-xs text-purple-300 bg-purple-500/20 px-2 py-1 rounded-full" data-i18n="magic_label">✨ Magie!</div>
         <div class="flex items-center gap-2 mb-3">
           <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
           <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Abgeben 5 Negative Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2" data-i18n="scenario_abgeben_neg">„Abgeben 5 Negative Tickets"</p>
         <div class="math-display">-(-5) = <span class="text-green-400">+5</span></div>
       </div>
     </div>
+
     <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-6">
       <h3 class="font-orbitron text-base font-semibold text-purple-300 mb-3">
-        <i class="fas fa-infinity mr-2"></i>Die Mathematische Regel
+        <i class="fas fa-infinity mr-2"></i><span data-i18n="rules_math_rule">Die Mathematische Regel</span>
       </h3>
       <div class="grid grid-cols-2 gap-3 text-center">
         <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">+(+) = +</div></div>
@@ -382,45 +953,51 @@
     <button id="closeTeacher" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl">
       <i class="fas fa-times"></i>
     </button>
-    <h2 class="font-orbitron text-2xl font-bold text-yellow-400 mb-6">🎓 Lehrermodus</h2>
+    <h2 class="font-orbitron text-2xl font-bold text-yellow-400 mb-6" data-i18n="teacher_title">🎓 Lehrermodus</h2>
+
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div>
-        <label class="block text-xs text-slate-400 mb-1">Min. Zahl</label>
+        <label class="block text-xs text-slate-400 mb-1" data-i18n="teacher_min">Min. Zahl</label>
         <input type="number" id="teacherMin" value="1" min="1" max="50" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
       </div>
       <div>
-        <label class="block text-xs text-slate-400 mb-1">Max. Zahl</label>
+        <label class="block text-xs text-slate-400 mb-1" data-i18n="teacher_max">Max. Zahl</label>
         <input type="number" id="teacherMax" value="10" min="1" max="100" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
       </div>
     </div>
+
     <div class="mb-4">
-      <label class="block text-xs text-slate-400 mb-2">Timer</label>
+      <label class="block text-xs text-slate-400 mb-2" data-i18n="teacher_timer">Timer</label>
       <div class="flex items-center gap-3">
         <input type="range" id="teacherTimer" min="0" max="120" value="0" step="5" class="flex-1 accent-yellow-400" />
-        <span id="teacherTimerDisplay" class="font-orbitron text-yellow-400 w-20 text-center">Aus</span>
+        <span id="teacherTimerDisplay" class="font-orbitron text-yellow-400 w-20 text-center" data-i18n="teacher_timer_off">Aus</span>
       </div>
     </div>
+
     <div class="mb-4 flex items-center gap-3">
       <label class="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" id="teacherCheatSheet" class="sr-only" />
         <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-yellow-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
-        <span class="ml-3 text-sm text-slate-300">Spickzettel (Antwort anzeigen)</span>
+        <span class="ml-3 text-sm text-slate-300" data-i18n="teacher_cheat">Spickzettel (Antwort anzeigen)</span>
       </label>
     </div>
+
     <div id="cheatSheetPanel" class="mt-4 hidden"></div>
+
     <div class="mb-4">
-      <label class="block text-xs text-slate-400 mb-1">Level fixieren</label>
+      <label class="block text-xs text-slate-400 mb-1" data-i18n="teacher_level">Level fixieren</label>
       <select id="teacherLevel" class="game-input w-full px-3 py-2 rounded-lg font-mono">
-        <option value="-1">Auto (nach Streak)</option>
-        <option value="0">Anfänger (1–5)</option>
-        <option value="1">Einsteiger (1–10)</option>
-        <option value="2">Fortgeschritten (1–20)</option>
-        <option value="3">Profi (1–50)</option>
-        <option value="4">Experte (1–100)</option>
+        <option value="-1" data-i18n="teacher_level_auto">Auto (nach Streak)</option>
+        <option value="0"  data-i18n="teacher_level_0">Anfänger (1–5)</option>
+        <option value="1"  data-i18n="teacher_level_1">Einsteiger (1–10)</option>
+        <option value="2"  data-i18n="teacher_level_2">Fortgeschritten (1–20)</option>
+        <option value="3"  data-i18n="teacher_level_3">Profi (1–50)</option>
+        <option value="4"  data-i18n="teacher_level_4">Experte (1–100)</option>
       </select>
     </div>
+
     <button id="applyTeacher" class="w-full py-3 rounded-xl font-orbitron text-sm font-bold bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 transition-all">
-      <i class="fas fa-check mr-2"></i>Anwenden & Spielen
+      <i class="fas fa-check mr-2"></i><span data-i18n="teacher_apply">Anwenden & Spielen</span>
     </button>
   </div>
 </div>
@@ -439,7 +1016,7 @@
         <span class="text-2xl">⚖️</span>
         <div class="hidden sm:block">
           <div class="font-orbitron text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 leading-none">Guthaben</div>
-          <div class="font-orbitron text-xs text-slate-500 leading-none">Schulden · Pro</div>
+          <div class="font-orbitron text-xs text-slate-500 leading-none" data-i18n="header_subtitle">Schulden · Pro</div>
         </div>
       </div>
 
@@ -458,15 +1035,20 @@
         </div>
       </div>
 
-      <!-- Audio / Rules -->
+      <!-- Controls -->
       <div class="flex items-center gap-2">
-        <button id="audioToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" title="Audio ein/aus">
+        <button id="audioToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all"
+          data-i18n-title="audio_toggle_title" title="Audio ein/aus">
           <i class="fas fa-volume-up text-cyan-400" id="audioIcon"></i>
         </button>
-        <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" aria-label="Spielregeln">
+        <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all"
+          data-i18n-aria="rules_btn_label" aria-label="Spielregeln">
           <i class="fas fa-book text-slate-400"></i>
         </button>
-        <button id="langToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400">TR/DE</button>
+        <!-- Lang toggle: label stays TR/DE but order shows current → other -->
+        <button id="langToggle"
+          class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400 transition-transform"
+          data-i18n-title="lang_toggle_label" title="Dil / Sprache">TR/DE</button>
         <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden">
           <i class="fas fa-chalkboard-teacher text-yellow-400"></i>
         </button>
@@ -481,19 +1063,19 @@
   <nav class="px-4 pt-4 pb-0 border-b border-white/5">
     <div class="max-w-6xl mx-auto flex gap-1 overflow-x-auto scrollbar-thin">
       <button class="main-tab-btn active-tab" data-tab="game">
-        <i class="fas fa-gamepad mr-2"></i>Spiel
+        <i class="fas fa-gamepad mr-2"></i><span data-i18n="tab_game">Spiel</span>
       </button>
       <button class="main-tab-btn" data-tab="stats">
-        <i class="fas fa-chart-line mr-2"></i>İstatistikler
+        <i class="fas fa-chart-line mr-2"></i><span data-i18n="tab_stats">İstatistikler</span>
       </button>
       <button class="main-tab-btn" data-tab="tickets">
-        <i class="fas fa-ticket-alt mr-2"></i>Tickets
+        <i class="fas fa-ticket-alt mr-2"></i><span data-i18n="tab_tickets">Tickets</span>
       </button>
       <button class="main-tab-btn" data-tab="leaderboard">
-        <i class="fas fa-trophy mr-2"></i>Sıralama
+        <i class="fas fa-trophy mr-2"></i><span data-i18n="tab_leaderboard">Sıralama</span>
       </button>
       <button class="main-tab-btn" data-tab="friends">
-        <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
+        <i class="fas fa-user-friends mr-2"></i><span data-i18n="tab_friends">Arkadaşlar</span>
       </button>
     </div>
   </nav>
@@ -507,11 +1089,11 @@
         <div class="flex items-center justify-between flex-wrap gap-4">
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
-              <div class="text-slate-400 text-xs uppercase tracking-widest">Level</div>
+              <div class="text-slate-400 text-xs uppercase tracking-widest" data-i18n="level_label">Level</div>
               <span id="levelDisplay" class="font-orbitron text-lg font-black text-cyan-400">1</span>
             </div>
             <div>
-              <div class="font-semibold text-slate-200 text-sm" id="levelName">Anfänger</div>
+              <div class="font-semibold text-slate-200 text-sm" id="levelName" data-i18n="lvl_anfanger">Anfänger</div>
               <div class="text-slate-500 text-xs" id="levelRange">Zahlen: 1–5</div>
             </div>
           </div>
@@ -519,7 +1101,7 @@
             <i class="fas fa-clock mr-2 text-sm"></i><span id="timerValue">--</span>s
           </div>
           <div class="flex items-center gap-3">
-            <div class="text-xs text-slate-500 uppercase tracking-widest">Puan</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest" data-i18n="score_label">Puan</div>
             <div id="scoreDisplay" class="font-orbitron text-xl font-bold text-cyan-400">0</div>
           </div>
         </div>
@@ -540,7 +1122,7 @@
             <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="you">DU</div>
             <div id="userBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-cyan-400" aria-live="polite">0</div>
             <div id="userTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-cyan-400 font-semibold hidden">
-              <i class="fas fa-circle-dot animate-pulse mr-1"></i>DEIN ZUG
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i><span data-i18n="your_turn">DEIN ZUG</span>
             </div>
           </div>
           <!-- Computer Card -->
@@ -548,7 +1130,7 @@
             <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="computer">COMPUTER</div>
             <div id="computerBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-purple-400" aria-live="polite">0</div>
             <div id="computerTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-purple-400 font-semibold hidden">
-              <i class="fas fa-circle-dot animate-pulse mr-1"></i>COMPUTER ZUG
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i><span data-i18n="computer_turn">COMPUTER ZUG</span>
             </div>
           </div>
         </div>
@@ -556,7 +1138,8 @@
         <!-- Task Card -->
         <div class="glass-panel rounded-2xl p-6 border border-white/5 relative overflow-hidden mb-6" id="taskCard">
           <div class="flex items-center gap-3 mb-5">
-            <div id="turnBadge" class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-i18n="your_turn_badge">DEIN ZUG</div>
+            <div id="turnBadge" class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+              data-i18n="your_turn_badge">DEIN ZUG</div>
           </div>
 
           <div id="instructionDisplay" class="instruction-display text-center py-6 rounded-xl mb-5 relative overflow-hidden">
@@ -567,7 +1150,7 @@
           </div>
 
           <div id="cheatOverlay" class="hidden mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-center">
-            <span class="text-yellow-400 text-xs mr-2">Antwort:</span>
+            <span class="text-yellow-400 text-xs mr-2" data-i18n="cheat_answer_label">Antwort:</span>
             <span id="cheatAnswer" class="text-yellow-400 font-mono font-bold text-sm"></span>
           </div>
 
@@ -576,14 +1159,17 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="your_expression">DEIN AUSDRUCK</label>
-                <input type="text" id="expressionInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. -(-5)" autocomplete="off" />
+                <input type="text" id="expressionInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center"
+                  data-i18n-placeholder="your_expression" placeholder="z.B. -(-5)" autocomplete="off" />
               </div>
               <div>
                 <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="new_balance">NEUER STAND</label>
-                <input type="number" id="balanceInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. 5" />
+                <input type="number" id="balanceInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center"
+                  data-i18n-placeholder="new_balance" placeholder="z.B. 5" />
               </div>
             </div>
-            <button id="checkBtn" class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group" aria-label="Antwort prüfen">
+            <button id="checkBtn" class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group"
+              data-i18n-aria="check">
               <span class="relative z-10" data-i18n="check">PRÜFEN</span>
             </button>
           </div>
@@ -651,7 +1237,7 @@
           </div>
           <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
             <div id="statMaxStreak" class="font-orbitron text-4xl font-black text-orange-400">0</div>
-            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststeak</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststreak</div>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -670,7 +1256,7 @@
         </div>
         <div class="text-center">
           <button id="resetStats" class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
-            <i class="fas fa-trash mr-2"></i>İstatistikleri Sıfırla
+            <i class="fas fa-trash mr-2"></i><span data-i18n="reset_stats">İstatistikleri Sıfırla</span>
           </button>
         </div>
       </div>
@@ -704,11 +1290,11 @@
                   <div class="flex gap-4 justify-center">
                     <div class="flex items-center gap-2">
                       <div class="w-5 h-5 rounded bg-green-500/40 border border-green-500/60 flex items-center justify-center text-xs text-green-400 font-bold">+</div>
-                      <span class="text-slate-400 text-xs">Positive Tickets</span>
+                      <span class="text-slate-400 text-xs" data-i18n="positive_tickets">Positive Tickets</span>
                     </div>
                     <div class="flex items-center gap-2">
                       <div class="w-5 h-5 rounded bg-red-500/40 border border-red-500/60 flex items-center justify-center text-xs text-red-400 font-bold">−</div>
-                      <span class="text-slate-400 text-xs">Negative Tickets</span>
+                      <span class="text-slate-400 text-xs" data-i18n="negative_tickets">Negative Tickets</span>
                     </div>
                   </div>
                 </div>
@@ -725,7 +1311,7 @@
       <div id="tab-leaderboard" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-trophy mr-2"></i>Sıralama Tablosu
+            <i class="fas fa-trophy mr-2"></i><span data-i18n="leaderboard_title">Sıralama Tablosu</span>
           </h2>
           <div id="leaderboardContent"></div>
         </div>
@@ -735,7 +1321,7 @@
       <div id="tab-friends" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
-            <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
+            <i class="fas fa-user-friends mr-2"></i><span data-i18n="friends_title">Arkadaşlar</span>
           </h2>
           <div id="friendsContent"></div>
         </div>
@@ -747,17 +1333,17 @@
   <!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
   <footer class="py-6 px-4 border-t border-white/5">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-      <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2026</p>
+      <p class="text-slate-600 text-sm font-rajdhani" data-i18n="footer_copy">Guthaben-Schulden-Spiel – Pro Edition © 2026</p>
       <a href="https://github.com/Higer" target="_blank" rel="noopener noreferrer" class="maker-signature-glass group">
         <div class="maker-glass-inner">
-          <span class="text-slate-400 text-sm">Made with</span>
+          <span class="text-slate-400 text-sm" data-i18n="footer_made_with">Made with</span>
           <i class="fas fa-heart text-red-500 text-sm animate-pulse mx-1"></i>
-          <span class="text-slate-400 text-sm">by</span>
+          <span class="text-slate-400 text-sm" data-i18n="footer_by">by</span>
           <span class="font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mx-1 maker-name">Higer</span>
           <i class="fab fa-github text-slate-400 group-hover:text-white transition-colors text-base"></i>
         </div>
       </a>
-      <p class="text-slate-700 text-xs">Firebase Edition ✦</p>
+      <p class="text-slate-700 text-xs" data-i18n="footer_edition">Firebase Edition ✦</p>
     </div>
   </footer>
 </div>
@@ -767,7 +1353,7 @@
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <script type="module" src="js/app.js"></script>
 
-<!-- Service Worker -->
+<!-- Service Worker Registration -->
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -777,6 +1363,18 @@
   window.addEventListener('unhandledrejection', (e) => {
     console.error('[UNHANDLED PROMISE]', e.reason);
   });
+
+  /* ── Expose a convenience helper so app.js can call Lang.t('key') anywhere ──
+     Usage in app.js:
+       const label = window.Lang.t('check');        // "PRÜFEN" or "KONTROL ET"
+       const lang  = window.Lang.current;           // "de" or "tr"
+
+       // Listen for manual language switch:
+       document.addEventListener('localeChanged', e => {
+         console.log('switched to', e.detail.lang);
+         // re-render dynamic UI parts that don't use data-i18n
+       });
+  */
 </script>
 </body>
-</html>
+  </html>
