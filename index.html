@@ -28,11 +28,18 @@
 
 <!-- LADE-OVERLAY -->
 <div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/98 backdrop-blur-xl">
-  <div class="text-center">
+  <div class="text-center px-6 max-w-sm">
     <div class="text-5xl mb-4">⚖️</div>
     <div class="font-orbitron text-xl text-cyan-400 mb-3">Verbinde mit Firebase…</div>
     <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
-    <p class="text-slate-500 text-sm mt-4">Einen Moment bitte</p>
+    <p id="fbLoadingMessage" class="text-slate-400 text-sm mt-4 transition-all duration-300">Einen Moment bitte</p>
+    <button
+      id="fbLoadingSkipBtn"
+      onclick="document.getElementById('fbLoadingOverlay').classList.add('hidden'); document.getElementById('authOverlay')?.classList.remove('hidden');"
+      class="hidden mt-5 px-4 py-2 text-xs rounded-lg border border-slate-600 text-slate-400 hover:text-white hover:border-slate-400 transition-colors"
+    >
+      Offline fortfahren (ohne Cloud-Sync)
+    </button>
   </div>
 </div>
 
@@ -522,7 +529,6 @@
 
       <!-- ══ STATISTIK-TAB ══ -->
       <div id="tab-stats" class="tab-content hidden">
-        <!-- Statistik-Karten (Responsive-Fix) -->
         <div class="stats-cards-grid mb-6">
           <div class="stat-card">
             <div id="statTotalCorrect" class="stat-value text-green-400">0</div>
@@ -541,8 +547,6 @@
             <div class="stat-label">Spiele gespielt</div>
           </div>
         </div>
-
-        <!-- Diagramme -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div class="glass-panel rounded-2xl p-5 border border-white/5">
             <h3 class="font-orbitron text-sm text-slate-400 uppercase mb-4">Genauigkeitsverlauf</h3>
@@ -553,8 +557,6 @@
             <div class="chart-container"><canvas id="opsChart"></canvas></div>
           </div>
         </div>
-
-        <!-- Heatmap -->
         <div class="glass-panel rounded-2xl p-5 border border-white/5">
           <h3 class="font-orbitron text-sm text-slate-400 uppercase mb-2">Schwierigkeits-Heatmap</h3>
           <p class="text-xs text-slate-600 mb-4">Zeigt, welche Kombinationen am häufigsten falsch beantwortet werden</p>
@@ -622,4 +624,4 @@
 </script>
 
 </body>
-</html>
+  </html>
