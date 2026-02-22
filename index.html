@@ -43,180 +43,6 @@
 
   <!-- Styles -->
   <link rel="stylesheet" href="css/styles.css" />
-
-  <!-- ═══════════════════════════════════════════════════════════ -->
-  <!--  INLINE STYLES – Passwort-Stärke & Ergänzungen            -->
-  <!-- ═══════════════════════════════════════════════════════════ -->
-  <style>
-    /* ── Passwortsstärke-Balken ──────────────────────────────── */
-    .pw-strength-bar-wrap {
-      height: 5px;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.07);
-      overflow: hidden;
-      margin-top: 6px;
-      transition: all .3s;
-    }
-    .pw-strength-bar {
-      height: 100%;
-      border-radius: 9999px;
-      transition: width .4s cubic-bezier(.4,0,.2,1), background .4s;
-      width: 0%;
-    }
-    .pw-strength-label {
-      font-size: 0.7rem;
-      font-family: 'JetBrains Mono', monospace;
-      letter-spacing: .05em;
-      margin-top: 4px;
-      transition: color .3s;
-    }
-    .pw-req-item {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      color: #64748b;
-      transition: color .25s;
-    }
-    .pw-req-item.met { color: #34d399; }
-    .pw-req-item i { width: 14px; text-align: center; }
-
-    /* ── Passwort-Toggle (Auge) ──────────────────────────────── */
-    .pw-eye-btn {
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      transform: translateY(-50%);
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: #64748b;
-      font-size: 0.85rem;
-      padding: 4px;
-      transition: color .2s;
-      z-index: 5;
-    }
-    .pw-eye-btn:hover { color: #94a3b8; }
-
-    /* ── Stärke-Farben ────────────────────────────────────────── */
-    .strength-0 { width: 0%;   background: transparent; }
-    .strength-1 { width: 20%;  background: #ef4444; }
-    .strength-2 { width: 40%;  background: #f97316; }
-    .strength-3 { width: 65%;  background: #eab308; }
-    .strength-4 { width: 85%;  background: #22c55e; }
-    .strength-5 { width: 100%; background: #06b6d4; }
-
-    /* ── Kennwort-Karte Hintergrund ────────────────────────────── */
-    .auth-glass {
-      background: linear-gradient(135deg, rgba(14,17,25,0.95) 0%, rgba(20,25,38,0.95) 100%);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 25px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05);
-    }
-
-    /* ── Tooltip für Passwort-Anforderungen ──────────────────── */
-    .pw-tooltip {
-      position: absolute;
-      left: 0;
-      top: calc(100% + 8px);
-      width: 100%;
-      background: rgba(14,17,25,0.98);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 12px;
-      padding: 10px 14px;
-      z-index: 50;
-      display: none;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-    }
-    .pw-tooltip.visible { display: block; }
-
-    /* ── Eingabe mit Padding rechts (für Auge) ─────────────────── */
-    .input-with-eye { padding-right: 2.75rem !important; }
-
-    /* ── Stärke-Badges ─────────────────────────────────────────── */
-    .badge-sehr-schwach { color: #ef4444; }
-    .badge-schwach      { color: #f97316; }
-    .badge-mittel       { color: #eab308; }
-    .badge-stark        { color: #22c55e; }
-    .badge-sehr-stark   { color: #06b6d4; }
-
-    /* ── Auth Tabs ─────────────────────────────────────────────── */
-    .auth-tab-btn {
-      flex: 1;
-      padding: 10px 0;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      color: #64748b;
-      border-bottom: 2px solid transparent;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
-      cursor: pointer;
-      transition: all .25s;
-    }
-    .auth-tab-btn.active {
-      color: #22d3ee;
-      border-bottom-color: #22d3ee;
-    }
-    .auth-tab-btn:hover:not(.active) { color: #94a3b8; }
-
-    /* ── Lade-Spinner ──────────────────────────────────────────── */
-    .spin-btn .fa-circle-notch { display: none; }
-    .spin-btn.loading .fa-circle-notch { display: inline-block; }
-    .spin-btn.loading .btn-txt { display: none; }
-
-    /* ── Divider ─────────────────────────────────────────────── */
-    .auth-divider {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 16px 0;
-      color: #334155;
-      font-size: 0.75rem;
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255,255,255,0.06);
-    }
-
-    /* ── Gast-Button Styl ─────────────────────────────────────── */
-    .guest-btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px dashed rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.02);
-      color: #475569;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all .25s;
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 500;
-    }
-    .guest-btn:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.18);
-      color: #94a3b8;
-    }
-
-    /* ── Checkbox Stil ────────────────────────────────────────── */
-    .remember-wrap {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-    }
-    .remember-wrap input[type=checkbox] {
-      width: 16px;
-      height: 16px;
-      accent-color: #22d3ee;
-      cursor: pointer;
-    }
-  </style>
 </head>
 
 <body class="bg-game-bg font-rajdhani text-slate-200 min-h-screen overflow-x-hidden">
@@ -228,253 +54,126 @@
 <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50" aria-hidden="true"></canvas>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  FIREBASE LADEVORGANG OVERLAY                                              -->
+<!--  FIREBASE LOADING OVERLAY                                                  -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/95 backdrop-blur-xl">
   <div class="text-center">
     <div class="mb-4 text-5xl">🔥</div>
-    <div class="font-orbitron text-xl text-cyan-400 mb-3">Verbinde…</div>
+    <div class="font-orbitron text-xl text-cyan-400 mb-3">Bağlanıyor...</div>
     <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
-    <p class="text-slate-500 text-sm mt-4">Firebase-Verbindung wird hergestellt</p>
+    <p class="text-slate-500 text-sm mt-4">Firebase ile bağlantı kuruluyor</p>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  FIREBASE FEHLER-BANNER                                                    -->
+<!--  FIREBASE ERROR BANNER                                                     -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="fbErrorBanner" class="hidden fixed top-0 inset-x-0 z-[150] px-4 py-3 bg-red-900/80 border-b border-red-500/40 backdrop-blur-sm text-center text-sm">
   <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
-  <span class="text-red-300">Firebase-Verbindung fehlgeschlagen — Überprüfe die Einstellungen in <strong>firebase-config.js</strong>.</span>
-  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Schließen</button>
+  <span class="text-red-300">Firebase bağlantısı kurulamadı — <strong>firebase-config.js</strong> dosyasındaki ayarları kontrol et.</span>
+  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Kapat</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  AUTH OVERLAY (Anmelden / Registrieren)                                   -->
+<!--  AUTH OVERLAY (Login / Signup)                                             -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="authOverlay" class="hidden fixed inset-0 z-[100] items-center justify-center bg-game-bg/98 backdrop-blur-2xl px-4">
   <div class="w-full max-w-md">
-
     <!-- Logo -->
     <div class="text-center mb-8">
-      <div class="text-5xl mb-3 select-none">⚖️</div>
+      <div class="text-5xl mb-3">⚖️</div>
       <h1 class="font-orbitron text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-1">
         Guthaben-Schulden
       </h1>
-      <p class="text-slate-400 text-sm tracking-widest font-mono">PRO EDITION · FIREBASE</p>
+      <p class="text-slate-400 text-sm">Pro Edition · Firebase</p>
     </div>
 
-    <!-- ──── AUTH CARD ────────────────────────────────────────────────────── -->
-    <div class="auth-glass rounded-2xl overflow-hidden">
-
-      <!-- Tab-Leiste -->
-      <div class="flex border-b border-white/5">
-        <button id="authTabLogin"  class="auth-tab-btn active" data-target="loginPanel">
-          <i class="fas fa-sign-in-alt mr-2"></i>Anmelden
+    <!-- LOGIN PANEL -->
+    <div id="loginPanel" class="glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Giriş Yap</h2>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginUsername" type="text" required placeholder="kullanici_adi"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginPassword" type="password" required placeholder="••••••••"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="loginBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
         </button>
-        <button id="authTabSignup" class="auth-tab-btn" data-target="signupPanel">
-          <i class="fas fa-user-plus mr-2"></i>Registrieren
+      </form>
+      <div class="mt-6 text-center space-y-3">
+        <p class="text-slate-500 text-sm">Hesabın yok mu?
+          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Kayıt Ol</button>
+        </p>
+        <button id="guestPlayBtn" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
+          <i class="fas fa-ghost mr-1"></i>Kayıt olmadan devam et (çevrimdışı)
         </button>
       </div>
+    </div>
 
-      <!-- ══ LOGIN PANEL ══════════════════════════════════════════════════ -->
-      <div id="loginPanel" class="p-8">
-        <form id="loginForm" class="space-y-4" novalidate>
-
-          <!-- Benutzername -->
-          <div>
-            <label for="loginUsername" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              Benutzername
-            </label>
-            <div class="relative">
-              <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="loginUsername" type="text" required autocomplete="username"
-                placeholder="dein_benutzername"
-                class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
-            </div>
+    <!-- SIGNUP PANEL -->
+    <div id="signupPanel" class="hidden glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Kayıt Ol</h2>
+      <form id="signupForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı *</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupUsername" type="text" required placeholder="benzersiz_adin"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
-
-          <!-- Passwort -->
-          <div>
-            <label for="loginPassword" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              Passwort
-            </label>
-            <div class="relative">
-              <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="loginPassword" type="password" required autocomplete="current-password"
-                placeholder="••••••••"
-                class="game-input w-full pl-9 pr-10 py-3 rounded-xl font-mono text-sm" />
-              <button type="button" class="pw-eye-btn" id="loginEye" title="Passwort anzeigen/verbergen" aria-label="Passwort umschalten">
-                <i class="fas fa-eye"></i>
-              </button>
-            </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre *</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupPassword" type="password" required placeholder="En az 6 karakter"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
-
-          <!-- Eingeloggt bleiben -->
-          <label class="remember-wrap select-none">
-            <input type="checkbox" id="rememberMe" />
-            <span class="text-xs text-slate-400">Angemeldet bleiben</span>
-          </label>
-
-          <!-- Fehler -->
-          <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3 border border-red-500/20"></p>
-
-          <!-- Submit -->
-          <button id="loginBtn" type="submit"
-            class="spin-btn w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold flex items-center justify-center gap-2">
-            <i class="fas fa-circle-notch animate-spin"></i>
-            <span class="btn-txt"><i class="fas fa-sign-in-alt mr-2"></i>Anmelden</span>
-          </button>
-        </form>
-
-        <div class="auth-divider">oder</div>
-
-        <!-- Gast -->
-        <button id="guestPlayBtn" class="guest-btn">
-          <i class="fas fa-ghost mr-2"></i>Ohne Konto fortfahren (offline)
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-posta <span class="text-slate-600">(isteğe bağlı)</span></label>
+          <div class="relative">
+            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupEmail" type="email" placeholder="ornek@email.com"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="signupBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
         </button>
-
-        <p class="text-center text-slate-600 text-xs mt-5">
-          Noch kein Konto?
-          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Jetzt registrieren</button>
+      </form>
+      <div class="mt-6 text-center">
+        <p class="text-slate-500 text-sm">Zaten hesabın var mı?
+          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Giriş Yap</button>
         </p>
       </div>
-
-      <!-- ══ SIGNUP PANEL ═════════════════════════════════════════════════ -->
-      <div id="signupPanel" class="hidden p-8">
-        <form id="signupForm" class="space-y-4" novalidate>
-
-          <!-- Benutzername -->
-          <div>
-            <label for="signupUsername" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              Benutzername <span class="text-cyan-500">*</span>
-            </label>
-            <div class="relative">
-              <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="signupUsername" type="text" required autocomplete="username"
-                placeholder="einzigartiger_name"
-                class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
-            </div>
-            <p class="text-slate-600 text-xs mt-1 pl-1">Nur Buchstaben, Zahlen und Unterstriche. Min. 3 Zeichen.</p>
-          </div>
-
-          <!-- E-Mail (optional) -->
-          <div>
-            <label for="signupEmail" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              E-Mail <span class="text-slate-600">(optional)</span>
-            </label>
-            <div class="relative">
-              <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="signupEmail" type="email" autocomplete="email"
-                placeholder="beispiel@email.com"
-                class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
-            </div>
-          </div>
-
-          <!-- Passwort + Stärkeanzeige -->
-          <div>
-            <label for="signupPassword" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              Passwort <span class="text-cyan-500">*</span>
-            </label>
-            <div class="relative">
-              <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="signupPassword" type="password" required autocomplete="new-password"
-                placeholder="Mindestens 8 Zeichen"
-                class="game-input w-full pl-9 input-with-eye py-3 rounded-xl font-mono text-sm" />
-              <button type="button" class="pw-eye-btn" id="signupEye" title="Passwort anzeigen/verbergen" aria-label="Passwort umschalten">
-                <i class="fas fa-eye"></i>
-              </button>
-
-              <!-- Passwort-Anforderungs-Tooltip -->
-              <div class="pw-tooltip" id="pwTooltip">
-                <div class="grid grid-cols-2 gap-1.5" id="pwRequirements">
-                  <div class="pw-req-item" data-req="length">
-                    <i class="fas fa-circle-check"></i><span>Mindestens 8 Zeichen</span>
-                  </div>
-                  <div class="pw-req-item" data-req="upper">
-                    <i class="fas fa-circle-check"></i><span>Großbuchstabe (A–Z)</span>
-                  </div>
-                  <div class="pw-req-item" data-req="lower">
-                    <i class="fas fa-circle-check"></i><span>Kleinbuchstabe (a–z)</span>
-                  </div>
-                  <div class="pw-req-item" data-req="number">
-                    <i class="fas fa-circle-check"></i><span>Ziffer (0–9)</span>
-                  </div>
-                  <div class="pw-req-item" data-req="special">
-                    <i class="fas fa-circle-check"></i><span>Sonderzeichen (!@#…)</span>
-                  </div>
-                  <div class="pw-req-item" data-req="nocommon">
-                    <i class="fas fa-circle-check"></i><span>Kein häufiges Passwort</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Stärke-Balken -->
-            <div class="pw-strength-bar-wrap mt-2">
-              <div class="pw-strength-bar strength-0" id="pwStrengthBar"></div>
-            </div>
-            <div class="flex items-center justify-between mt-1">
-              <span class="pw-strength-label text-slate-600" id="pwStrengthLabel">Passwort eingeben</span>
-              <span class="text-xs text-slate-700 font-mono" id="pwStrengthScore"></span>
-            </div>
-          </div>
-
-          <!-- Passwort bestätigen -->
-          <div>
-            <label for="signupPasswordConfirm" class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">
-              Passwort bestätigen <span class="text-cyan-500">*</span>
-            </label>
-            <div class="relative">
-              <i class="fas fa-shield-alt absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none"></i>
-              <input id="signupPasswordConfirm" type="password" required autocomplete="new-password"
-                placeholder="Passwort wiederholen"
-                class="game-input w-full pl-9 input-with-eye py-3 rounded-xl font-mono text-sm" />
-              <button type="button" class="pw-eye-btn" id="signupEyeConfirm" title="Passwort anzeigen/verbergen" aria-label="Passwort umschalten">
-                <i class="fas fa-eye"></i>
-              </button>
-            </div>
-            <p id="pwMatchMsg" class="hidden text-xs mt-1 pl-1"></p>
-          </div>
-
-          <!-- Nutzungsbedingungen -->
-          <label class="remember-wrap select-none">
-            <input type="checkbox" id="signupTerms" required />
-            <span class="text-xs text-slate-400">
-              Ich akzeptiere die <button type="button" class="text-cyan-400 hover:underline" onclick="void(0)">Nutzungsbedingungen</button>
-            </span>
-          </label>
-
-          <!-- Fehler -->
-          <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3 border border-red-500/20"></p>
-
-          <!-- Submit -->
-          <button id="signupBtn" type="submit"
-            class="spin-btn w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold flex items-center justify-center gap-2">
-            <i class="fas fa-circle-notch animate-spin"></i>
-            <span class="btn-txt"><i class="fas fa-user-plus mr-2"></i>Konto erstellen</span>
-          </button>
-        </form>
-
-        <p class="text-center text-slate-600 text-xs mt-5">
-          Bereits registriert?
-          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Jetzt anmelden</button>
-        </p>
-      </div>
-    </div><!-- /auth-glass -->
-
+    </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  ABSTURZ-BILDSCHIRM                                                        -->
+<!--  CRASH SCREEN                                                              -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="crashScreen" class="fixed inset-0 z-[999] hidden flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
   <div class="text-center p-8 max-w-md">
     <div class="text-6xl mb-4">⚠️</div>
     <h2 class="font-orbitron text-2xl text-red-400 mb-3">Kritischer Fehler</h2>
     <p id="crashMessage" class="text-slate-300 mb-6">Ein unerwarteter Fehler ist aufgetreten.</p>
-    <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()"
-      class="btn-primary px-6 py-3 rounded-xl font-orbitron">
+    <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
       <i class="fas fa-redo mr-2"></i>Neu starten
     </button>
   </div>
@@ -486,15 +185,14 @@
 <div id="toastContainer" class="fixed top-4 right-4 z-[90] flex flex-col gap-3 pointer-events-none" aria-live="polite"></div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  BENACHRICHTIGUNGS-PANEL                                                   -->
+<!--  NOTIFICATION PANEL                                                        -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<div id="notifPanel" class="hidden fixed top-16 right-4 z-[80] w-80 glass-panel rounded-2xl border border-white/10 p-4 shadow-2xl"
-  style="max-height:420px;overflow-y:auto;">
+<div id="notifPanel" class="hidden fixed top-16 right-4 z-[80] w-80 glass-panel rounded-2xl border border-white/10 p-4 shadow-2xl" style="max-height:420px;overflow-y:auto;">
   <div id="notificationsContainer"></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  POSTEINGANG MODAL (Nachricht vom Admin beim Login)                        -->
+<!--  INBOX MODAL (message from admin on login)                                 -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="inboxModal" class="hidden fixed inset-0 z-[120] items-center justify-center px-4">
   <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
@@ -507,27 +205,25 @@
         <i class="fas fa-envelope text-yellow-400"></i>
       </div>
       <div>
-        <div class="font-orbitron text-sm text-yellow-400">Neue Nachricht</div>
-        <div class="text-xs text-slate-500">Eine Nachricht wartet auf dich</div>
+        <div class="font-orbitron text-sm text-yellow-400">Yeni Mesaj</div>
+        <div class="text-xs text-slate-500">Giriş yapınca seni bekleyen bir mesaj var</div>
       </div>
     </div>
-    <div class="mb-2 text-xs text-slate-500">Von: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
-    <div class="mb-1 text-xs text-slate-500">Datum: <span id="inboxMsgDate" class="text-slate-400"></span></div>
+    <div class="mb-2 text-xs text-slate-500">Gönderen: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
+    <div class="mb-1 text-xs text-slate-500">Tarih: <span id="inboxMsgDate" class="text-slate-400"></span></div>
     <h3 id="inboxMsgSubject" class="font-orbitron text-lg text-slate-200 my-3"></h3>
     <p id="inboxMsgBody" class="text-slate-300 text-sm leading-relaxed mb-5 p-4 bg-white/5 rounded-xl border border-white/5"></p>
     <div class="flex gap-3">
-      <textarea id="inboxReplyInput" rows="2" placeholder="Antworten…"
-        class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
-      <button id="inboxReplyBtn"
-        class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
-        <i class="fas fa-reply mr-1"></i>Senden
+      <textarea id="inboxReplyInput" rows="2" placeholder="Yanıtla..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
+      <button id="inboxReplyBtn" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
+        <i class="fas fa-reply mr-1"></i>Gönder
       </button>
     </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  PROFIL-OVERLAY                                                            -->
+<!--  PROFILE OVERLAY                                                           -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="profileOverlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
   <div class="glass-panel rounded-2xl p-8 max-w-2xl w-full border border-white/10 max-h-[90vh] overflow-y-auto relative">
@@ -542,20 +238,19 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  ADMIN-OVERLAY                                                             -->
+<!--  ADMIN OVERLAY                                                             -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="adminOverlay" class="hidden fixed inset-0 z-[90] items-start justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto">
   <div class="glass-panel rounded-2xl w-full max-w-5xl border border-yellow-500/20 min-h-[80vh]">
-
-    <!-- Admin-Kopfzeile -->
+    <!-- Admin Header -->
     <div class="flex items-center justify-between p-6 border-b border-white/10">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
           <i class="fas fa-shield-alt text-yellow-400"></i>
         </div>
         <div>
-          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin-Panel</h2>
-          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Verwaltung</p>
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin Paneli</h2>
+          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Yönetim</p>
         </div>
       </div>
       <button id="closeAdminBtn" class="text-slate-400 hover:text-white text-2xl transition-colors">
@@ -563,26 +258,26 @@
       </button>
     </div>
 
-    <!-- Admin-Tabs -->
+    <!-- Admin Tabs -->
     <div class="flex gap-1 px-6 pt-4 border-b border-white/5 overflow-x-auto scrollbar-thin pb-0">
       <button class="admin-tab-btn active-admin-tab" data-tab="stats">
-        <i class="fas fa-chart-bar mr-2"></i>Statistiken
+        <i class="fas fa-chart-bar mr-2"></i>İstatistikler
       </button>
       <button class="admin-tab-btn" data-tab="users">
-        <i class="fas fa-users mr-2"></i>Benutzer
+        <i class="fas fa-users mr-2"></i>Kullanıcılar
       </button>
       <button class="admin-tab-btn" data-tab="messages">
-        <i class="fas fa-envelope mr-2"></i>Nachrichten
+        <i class="fas fa-envelope mr-2"></i>Mesajlar
       </button>
       <button class="admin-tab-btn" data-tab="devices">
-        <i class="fas fa-laptop mr-2"></i>Geräte
+        <i class="fas fa-laptop mr-2"></i>Cihazlar
       </button>
       <button class="admin-tab-btn" data-tab="logs">
-        <i class="fas fa-history mr-2"></i>Protokoll
+        <i class="fas fa-history mr-2"></i>Loglar
       </button>
     </div>
 
-    <!-- Admin Tab-Inhalte -->
+    <!-- Admin Tab Panes -->
     <div class="p-6">
       <div class="admin-tab-pane" data-pane="stats" id="admin-pane-stats"></div>
       <div class="admin-tab-pane hidden" data-pane="users" id="admin-pane-users"></div>
@@ -593,7 +288,7 @@
   </div>
 </div>
 
-<!-- Admin Unter-Modal (Benutzer bearbeiten) -->
+<!-- Admin Sub-Modal (Edit User) -->
 <div id="adminSubModal" class="hidden fixed inset-0 z-[100] items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
   <div class="glass-panel rounded-2xl p-8 max-w-3xl w-full border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative">
     <button id="closeSubModal" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
@@ -604,43 +299,35 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  REGELN MODAL                                                              -->
+<!--  RULES MODAL                                                               -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<div id="rulesModal" class="modal-overlay fixed inset-0 z-[100] hidden"
-  role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+<div id="rulesModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="modal-backdrop absolute inset-0" id="rulesBackdrop"></div>
   <div class="modal-content glass-panel relative z-10 max-w-3xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
-    <button id="closeRules"
-      class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" aria-label="Schließen">
+    <button id="closeRules" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" aria-label="Schließen">
       <i class="fas fa-times"></i>
     </button>
     <h2 id="rulesTitle" class="font-orbitron text-3xl font-bold text-cyan-400 mb-2 neon-text">
       <i class="fas fa-book-open mr-3"></i><span data-i18n="rules_title">Spielregeln</span>
     </h2>
-    <p class="text-slate-400 mb-8 text-lg" data-i18n="rules_subtitle">
-      Verstehe die Magie hinter positiven und negativen Zahlen.
-    </p>
+    <p class="text-slate-400 mb-8 text-lg" data-i18n="rules_subtitle">Verstehe die Magie hinter positiven und negativen Zahlen.</p>
 
     <div class="rules-section mb-6 p-6 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
       <h3 class="font-orbitron text-lg font-semibold text-cyan-300 mb-4">
-        <i class="fas fa-lightbulb mr-2 text-yellow-400"></i>
-        <span data-i18n="rules_concept">Das Grundprinzip</span>
+        <i class="fas fa-lightbulb mr-2 text-yellow-400"></i><span data-i18n="rules_concept">Das Grundprinzip</span>
       </h3>
       <p class="text-slate-300 leading-relaxed mb-4" data-i18n="rules_concept_text">
-        Stell dir vor, du hast zwei Arten von Tickets:
-        <span class="text-green-400 font-semibold">Positive Tickets (+1 €)</span> und
-        <span class="text-red-400 font-semibold">Negative Tickets (-1 €)</span>.
+        Stell dir vor, du hast zwei Arten von Tickets: <span class="text-green-400 font-semibold">Positive Tickets (+1€)</span> und <span class="text-red-400 font-semibold">Negative Tickets (-1€)</span>.
         Dein Kontostand bestimmt sich durch die Summe aller Tickets, die du besitzt.
       </p>
     </div>
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       <div class="scenario-card p-5 rounded-xl border border-green-500/30 bg-green-500/5">
         <div class="flex items-center gap-2 mb-3">
           <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
           <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Nehmen 3 positive Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 3 Positive Tickets"</p>
         <div class="math-display">+(+3) = <span class="text-green-400">+3</span></div>
       </div>
       <div class="scenario-card p-5 rounded-xl border border-red-500/30 bg-red-500/5">
@@ -648,7 +335,7 @@
           <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
           <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Nehmen 4 negative Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 4 Negative Tickets"</p>
         <div class="math-display">+(-4) = <span class="text-red-400">-4</span></div>
       </div>
       <div class="scenario-card p-5 rounded-xl border border-orange-500/30 bg-orange-500/5">
@@ -656,7 +343,7 @@
           <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
           <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Abgeben 2 positive Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 2 Positive Tickets"</p>
         <div class="math-display">-(+2) = <span class="text-red-400">-2</span></div>
       </div>
       <div class="scenario-card p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 relative overflow-hidden">
@@ -665,14 +352,13 @@
           <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
           <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
         </div>
-        <p class="text-slate-300 text-sm mb-2">„Abgeben 5 negative Tickets"</p>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 5 Negative Tickets"</p>
         <div class="math-display">-(-5) = <span class="text-green-400">+5</span></div>
       </div>
     </div>
-
     <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-6">
       <h3 class="font-orbitron text-base font-semibold text-purple-300 mb-3">
-        <i class="fas fa-infinity mr-2"></i>Die mathematische Regel
+        <i class="fas fa-infinity mr-2"></i>Die Mathematische Regel
       </h3>
       <div class="grid grid-cols-2 gap-3 text-center">
         <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">+(+) = +</div></div>
@@ -681,7 +367,6 @@
         <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">-(-) = +</div></div>
       </div>
     </div>
-
     <button id="closeRulesBtn" class="mt-4 w-full btn-primary py-4 rounded-xl font-orbitron text-lg font-semibold">
       <i class="fas fa-play mr-2"></i><span data-i18n="start_game">Spiel starten!</span>
     </button>
@@ -689,7 +374,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  LEHRERMODUS MODAL                                                         -->
+<!--  TEACHER MODAL                                                             -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="teacherModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
   <div class="modal-backdrop absolute inset-0" id="teacherBackdrop"></div>
@@ -701,13 +386,11 @@
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div>
         <label class="block text-xs text-slate-400 mb-1">Min. Zahl</label>
-        <input type="number" id="teacherMin" value="1" min="1" max="50"
-          class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+        <input type="number" id="teacherMin" value="1" min="1" max="50" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
       </div>
       <div>
         <label class="block text-xs text-slate-400 mb-1">Max. Zahl</label>
-        <input type="number" id="teacherMax" value="10" min="1" max="100"
-          class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+        <input type="number" id="teacherMax" value="10" min="1" max="100" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
       </div>
     </div>
     <div class="mb-4">
@@ -720,10 +403,7 @@
     <div class="mb-4 flex items-center gap-3">
       <label class="relative inline-flex items-center cursor-pointer">
         <input type="checkbox" id="teacherCheatSheet" class="sr-only" />
-        <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-yellow-500
-          after:content-[''] after:absolute after:top-0.5 after:left-0.5
-          after:bg-white after:rounded-full after:h-5 after:w-5
-          after:transition-all peer-checked:after:translate-x-full"></div>
+        <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-yellow-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
         <span class="ml-3 text-sm text-slate-300">Spickzettel (Antwort anzeigen)</span>
       </label>
     </div>
@@ -739,47 +419,46 @@
         <option value="4">Experte (1–100)</option>
       </select>
     </div>
-    <button id="applyTeacher"
-      class="w-full py-3 rounded-xl font-orbitron text-sm font-bold bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 transition-all">
-      <i class="fas fa-check mr-2"></i>Anwenden &amp; Spielen
+    <button id="applyTeacher" class="w-full py-3 rounded-xl font-orbitron text-sm font-bold bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 transition-all">
+      <i class="fas fa-check mr-2"></i>Anwenden & Spielen
     </button>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  APP WRAPPER (nach dem Login sichtbar)                                     -->
+<!--  APP WRAPPER (shown after login)                                           -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="appWrapper" class="hidden relative z-10 min-h-screen flex flex-col">
 
-  <!-- ─── KOPFZEILE ─────────────────────────────────────────────────────────── -->
+  <!-- ─── HEADER ───────────────────────────────────────────────────────────── -->
   <header class="sticky top-0 z-40 px-4 py-3 border-b border-white/5 backdrop-blur-xl bg-game-bg/80">
     <div class="max-w-6xl mx-auto flex items-center gap-3 flex-wrap">
 
       <!-- Logo -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <span class="text-2xl select-none">⚖️</span>
+        <span class="text-2xl">⚖️</span>
         <div class="hidden sm:block">
           <div class="font-orbitron text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 leading-none">Guthaben</div>
           <div class="font-orbitron text-xs text-slate-500 leading-none">Schulden · Pro</div>
         </div>
       </div>
 
-      <!-- Abstandhalter -->
+      <!-- Spacer -->
       <div class="flex-1"></div>
 
-      <!-- Streak & Punktzahl -->
+      <!-- Streak & Score -->
       <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl" title="Aktuelle Streak">
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
           <span id="streakFlame" class="streak-flame text-xl" aria-hidden="true">🔥</span>
           <div id="streakCount" class="font-orbitron text-lg font-bold text-orange-400">0</div>
         </div>
-        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl" title="Highscore">
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
           <i class="fas fa-star text-yellow-400 text-xs"></i>
           <div id="highScore" class="font-orbitron text-lg font-bold text-yellow-400">0</div>
         </div>
       </div>
 
-      <!-- Steuerleiste -->
+      <!-- Audio / Rules -->
       <div class="flex items-center gap-2">
         <button id="audioToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" title="Audio ein/aus">
           <i class="fas fa-volume-up text-cyan-400" id="audioIcon"></i>
@@ -787,44 +466,43 @@
         <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" aria-label="Spielregeln">
           <i class="fas fa-book text-slate-400"></i>
         </button>
-        <button id="langToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400"
-          title="Sprache umschalten">DE/TR</button>
-        <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden" title="Lehrermodus">
+        <button id="langToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400">TR/DE</button>
+        <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden">
           <i class="fas fa-chalkboard-teacher text-yellow-400"></i>
         </button>
       </div>
 
-      <!-- Benutzerbereich -->
+      <!-- User Area -->
       <div id="headerUserArea" class="flex items-center gap-2"></div>
     </div>
   </header>
 
-  <!-- ─── HAUPT-TABS ────────────────────────────────────────────────────────── -->
+  <!-- ─── MAIN TABS ─────────────────────────────────────────────────────────── -->
   <nav class="px-4 pt-4 pb-0 border-b border-white/5">
     <div class="max-w-6xl mx-auto flex gap-1 overflow-x-auto scrollbar-thin">
       <button class="main-tab-btn active-tab" data-tab="game">
         <i class="fas fa-gamepad mr-2"></i>Spiel
       </button>
       <button class="main-tab-btn" data-tab="stats">
-        <i class="fas fa-chart-line mr-2"></i>Statistiken
+        <i class="fas fa-chart-line mr-2"></i>İstatistikler
       </button>
       <button class="main-tab-btn" data-tab="tickets">
         <i class="fas fa-ticket-alt mr-2"></i>Tickets
       </button>
       <button class="main-tab-btn" data-tab="leaderboard">
-        <i class="fas fa-trophy mr-2"></i>Rangliste
+        <i class="fas fa-trophy mr-2"></i>Sıralama
       </button>
       <button class="main-tab-btn" data-tab="friends">
-        <i class="fas fa-user-friends mr-2"></i>Freunde
+        <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
       </button>
     </div>
   </nav>
 
-  <!-- ─── HAUPTINHALT ───────────────────────────────────────────────────────── -->
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────────────────── -->
   <main class="flex-1 px-4 py-6">
     <div class="max-w-6xl mx-auto">
 
-      <!-- ── LEVEL / PUNKTZAHL HEADER ── -->
+      <!-- ── LEVEL / SCORE HEADER ── -->
       <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/5">
         <div class="flex items-center justify-between flex-wrap gap-4">
           <div class="flex items-center gap-4">
@@ -841,7 +519,7 @@
             <i class="fas fa-clock mr-2 text-sm"></i><span id="timerValue">--</span>s
           </div>
           <div class="flex items-center gap-3">
-            <div class="text-xs text-slate-500 uppercase tracking-widest">Punkte</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Puan</div>
             <div id="scoreDisplay" class="font-orbitron text-xl font-bold text-cyan-400">0</div>
           </div>
         </div>
@@ -854,41 +532,31 @@
         </div>
       </div>
 
-      <!-- ══ SPIEL-TAB ══════════════════════════════════════════════════════════ -->
+      <!-- ══ GAME TAB ══════════════════════════════════════════════════════════ -->
       <div id="tab-game" class="tab-content">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-
-          <!-- Spieler-Karte -->
+          <!-- Player Card -->
           <div class="glass-panel rounded-2xl p-5 border-cyan-500/20 relative overflow-hidden player-card" id="userCard">
             <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="you">DU</div>
-            <div id="userBalance"
-              class="font-orbitron text-4xl md:text-5xl font-black balance-display text-cyan-400"
-              aria-live="polite">0</div>
-            <div id="userTurnIndicator"
-              class="turn-indicator absolute bottom-3 right-3 text-xs text-cyan-400 font-semibold hidden">
+            <div id="userBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-cyan-400" aria-live="polite">0</div>
+            <div id="userTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-cyan-400 font-semibold hidden">
               <i class="fas fa-circle-dot animate-pulse mr-1"></i>DEIN ZUG
             </div>
           </div>
-
-          <!-- Computer-Karte -->
+          <!-- Computer Card -->
           <div class="glass-panel rounded-2xl p-5 border-purple-500/20 relative overflow-hidden" id="computerCard">
             <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="computer">COMPUTER</div>
-            <div id="computerBalance"
-              class="font-orbitron text-4xl md:text-5xl font-black balance-display text-purple-400"
-              aria-live="polite">0</div>
-            <div id="computerTurnIndicator"
-              class="turn-indicator absolute bottom-3 right-3 text-xs text-purple-400 font-semibold hidden">
-              <i class="fas fa-circle-dot animate-pulse mr-1"></i>COMPUTER-ZUG
+            <div id="computerBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-purple-400" aria-live="polite">0</div>
+            <div id="computerTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-purple-400 font-semibold hidden">
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i>COMPUTER ZUG
             </div>
           </div>
         </div>
 
-        <!-- Aufgaben-Karte -->
+        <!-- Task Card -->
         <div class="glass-panel rounded-2xl p-6 border border-white/5 relative overflow-hidden mb-6" id="taskCard">
           <div class="flex items-center gap-3 mb-5">
-            <div id="turnBadge"
-              class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
-              data-i18n="your_turn_badge">DEIN ZUG</div>
+            <div id="turnBadge" class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-i18n="your_turn_badge">DEIN ZUG</div>
           </div>
 
           <div id="instructionDisplay" class="instruction-display text-center py-6 rounded-xl mb-5 relative overflow-hidden">
@@ -903,34 +571,24 @@
             <span id="cheatAnswer" class="text-yellow-400 font-mono font-bold text-sm"></span>
           </div>
 
-          <!-- Eingabebereich -->
+          <!-- Input Area -->
           <div id="inputArea" class="space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="your_expression">
-                  DEIN AUSDRUCK
-                </label>
-                <input type="text" id="expressionInput"
-                  class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center"
-                  placeholder="z. B. -(-5)" autocomplete="off" />
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="your_expression">DEIN AUSDRUCK</label>
+                <input type="text" id="expressionInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. -(-5)" autocomplete="off" />
               </div>
               <div>
-                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="new_balance">
-                  NEUER STAND
-                </label>
-                <input type="number" id="balanceInput"
-                  class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center"
-                  placeholder="z. B. 5" />
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="new_balance">NEUER STAND</label>
+                <input type="number" id="balanceInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. 5" />
               </div>
             </div>
-            <button id="checkBtn"
-              class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group"
-              aria-label="Antwort prüfen">
+            <button id="checkBtn" class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group" aria-label="Antwort prüfen">
               <span class="relative z-10" data-i18n="check">PRÜFEN</span>
             </button>
           </div>
 
-          <!-- Computer denkt -->
+          <!-- Computer Thinking -->
           <div id="computerThinking" class="hidden text-center py-8">
             <div class="inline-flex items-center gap-3 text-purple-400">
               <div class="thinking-dots flex gap-2">
@@ -942,7 +600,7 @@
             </div>
           </div>
 
-          <!-- Rückmeldung -->
+          <!-- Feedback -->
           <div id="feedbackArea" class="feedback-area rounded-2xl p-5 hidden mt-4" role="alert" aria-live="assertive">
             <div class="flex items-start gap-4">
               <div id="feedbackIcon" class="text-3xl flex-shrink-0"></div>
@@ -955,28 +613,24 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- Spielprotokoll -->
+          <!-- Game Log -->
           <div class="glass-panel rounded-2xl p-5 border border-white/5">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="game_log">
-                Spielprotokoll
-              </h3>
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="game_log">Spiellog</h3>
             </div>
             <div id="gameLog" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin" aria-live="polite"></div>
           </div>
 
-          <!-- Erfolge -->
+          <!-- Achievements -->
           <div class="glass-panel rounded-2xl p-5 border border-white/5">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="achievements">
-                Erfolge
-              </h3>
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="achievements">Erfolge</h3>
             </div>
             <div id="achievementsGrid" class="grid grid-cols-3 gap-2"></div>
           </div>
         </div>
 
-        <!-- Neues Spiel -->
+        <!-- New Game Button -->
         <div class="mt-6">
           <button id="newGameBtn" class="w-full btn-secondary py-3 rounded-xl font-orbitron text-sm font-bold tracking-wider">
             <i class="fas fa-redo mr-2"></i><span data-i18n="new_game">Neues Spiel</span>
@@ -984,7 +638,7 @@
         </div>
       </div>
 
-      <!-- ══ STATISTIKEN-TAB ════════════════════════════════════════════════════ -->
+      <!-- ══ STATS TAB ═════════════════════════════════════════════════════════ -->
       <div id="tab-stats" class="tab-content hidden">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
@@ -997,72 +651,52 @@
           </div>
           <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
             <div id="statMaxStreak" class="font-orbitron text-4xl font-black text-orange-400">0</div>
-            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beste Streak</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststeak</div>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div class="glass-panel rounded-2xl p-6 border border-white/5">
-            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="accuracy_chart">
-              Genauigkeit
-            </h3>
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="accuracy_chart">Genauigkeit</h3>
             <canvas id="accuracyChart"></canvas>
           </div>
           <div class="glass-panel rounded-2xl p-6 border border-white/5">
-            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="operations_chart">
-              Operationen
-            </h3>
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="operations_chart">Operationen</h3>
             <canvas id="opsChart"></canvas>
           </div>
         </div>
         <div class="glass-panel rounded-2xl p-6 border border-white/5 mb-6">
-          <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="heatmap_title">
-            Aktivitäts-Heatmap
-          </h3>
+          <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="heatmap_title">Aktivitätsheatmap</h3>
           <div id="heatmapGrid" class="grid gap-3" style="grid-template-columns: repeat(4, 1fr)"></div>
         </div>
         <div class="text-center">
-          <button id="resetStats"
-            class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
-            <i class="fas fa-trash mr-2"></i>Statistiken zurücksetzen
+          <button id="resetStats" class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
+            <i class="fas fa-trash mr-2"></i>İstatistikleri Sıfırla
           </button>
         </div>
       </div>
 
-      <!-- ══ TICKETS-TAB ══════════════════════════════════════════════════════════ -->
+      <!-- ══ TICKETS TAB ════════════════════════════════════════════════════════ -->
       <div id="tab-tickets" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-8">
-          <h2 class="font-orbitron text-xl font-bold text-center text-slate-200 mb-2" data-i18n="ticket_stack_title">
-            Visueller Ticket-Stapel
-          </h2>
-          <p class="text-slate-400 text-sm text-center mb-8" data-i18n="ticket_stack_desc">
-            Beobachte, wie Tickets in dein Konto fließen oder abgehen.
-          </p>
+          <h2 class="font-orbitron text-xl font-bold text-center text-slate-200 mb-2" data-i18n="ticket_stack_title">Visueller Ticket-Stack</h2>
+          <p class="text-slate-400 text-sm text-center mb-8" data-i18n="ticket_stack_desc">Beobachte, wie Tickets in dein Konto fließen oder abgehen.</p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div>
               <div class="text-center mb-4">
-                <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-2" data-i18n="your_stack">
-                  Dein Ticket-Stapel
-                </div>
+                <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-2" data-i18n="your_stack">Dein Ticket-Stack</div>
                 <div id="stackBalance" class="font-orbitron text-5xl font-black text-cyan-400 mb-4">0</div>
               </div>
-              <div id="ticketStackArea"
-                class="relative min-h-48 bg-white/3 rounded-2xl border border-white/10 overflow-hidden flex flex-wrap content-end gap-1 p-3">
+              <div id="ticketStackArea" class="relative min-h-48 bg-white/3 rounded-2xl border border-white/10 overflow-hidden flex flex-wrap content-end gap-1 p-3">
                 <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="stackEmptyMsg">
-                  <span class="text-slate-600 text-sm font-orbitron" data-i18n="stack_empty">
-                    Noch keine Tickets
-                  </span>
+                  <span class="text-slate-600 text-sm font-orbitron" data-i18n="stack_empty">Noch keine Tickets</span>
                 </div>
               </div>
             </div>
             <div>
-              <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4 text-center" data-i18n="simulate">
-                Simulation
-              </div>
+              <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4 text-center" data-i18n="simulate">Simulation</div>
               <div class="space-y-4">
                 <div class="glass-panel rounded-xl p-4">
-                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2" data-i18n="last_op">
-                    Letzte Operation
-                  </div>
+                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2" data-i18n="last_op">Letzte Operation</div>
                   <div id="lastOpDisplay" class="font-mono text-2xl text-center text-slate-300">—</div>
                 </div>
                 <div class="glass-panel rounded-xl p-4">
@@ -1087,21 +721,21 @@
         </div>
       </div>
 
-      <!-- ══ RANGLISTE-TAB ════════════════════════════════════════════════════════ -->
+      <!-- ══ LEADERBOARD TAB ═══════════════════════════════════════════════════ -->
       <div id="tab-leaderboard" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-trophy mr-2"></i>Rangliste
+            <i class="fas fa-trophy mr-2"></i>Sıralama Tablosu
           </h2>
           <div id="leaderboardContent"></div>
         </div>
       </div>
 
-      <!-- ══ FREUNDE-TAB ══════════════════════════════════════════════════════════ -->
+      <!-- ══ FRIENDS TAB ════════════════════════════════════════════════════════ -->
       <div id="tab-friends" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
-            <i class="fas fa-user-friends mr-2"></i>Freunde
+            <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
           </h2>
           <div id="friendsContent"></div>
         </div>
@@ -1110,15 +744,15 @@
     </div>
   </main>
 
-  <!-- ─── FUSSZEILE ─────────────────────────────────────────────────────────── -->
+  <!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
   <footer class="py-6 px-4 border-t border-white/5">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
       <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2026</p>
       <a href="https://github.com/Higer" target="_blank" rel="noopener noreferrer" class="maker-signature-glass group">
         <div class="maker-glass-inner">
-          <span class="text-slate-400 text-sm">Gemacht mit</span>
+          <span class="text-slate-400 text-sm">Made with</span>
           <i class="fas fa-heart text-red-500 text-sm animate-pulse mx-1"></i>
-          <span class="text-slate-400 text-sm">von</span>
+          <span class="text-slate-400 text-sm">by</span>
           <span class="font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mx-1 maker-name">Higer</span>
           <i class="fab fa-github text-slate-400 group-hover:text-white transition-colors text-base"></i>
         </div>
@@ -1129,328 +763,7 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  INLINE JAVASCRIPT – Auth UI & Passwort-Stärke                            -->
-<!--  (kein externer JS geändert – nur reine DOM-Interaktionen hier)           -->
-<!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<script>
-(function () {
-  'use strict';
-
-  /* ── Häufige Passwörter (Mini-Blacklist) ─────────────────────────────────── */
-  const COMMON_PASSWORDS = new Set([
-    'passwort','password','123456','12345678','qwertz','abc123','letmein',
-    'monkey','1234567','dragon','master','sunshine','princess','welcome',
-    '123456789','password1','qwerty','baseball','football','superman',
-    'iloveyou','admin','login','test','hello','hallo','geheim','sommer',
-    'winter','hund','katze','berlin','germany','deutsch','schule'
-  ]);
-
-  /* ── Passwort-Stärke berechnen ───────────────────────────────────────────── */
-  function evaluatePassword(pw) {
-    const reqs = {
-      length:   pw.length >= 8,
-      upper:    /[A-Z]/.test(pw),
-      lower:    /[a-z]/.test(pw),
-      number:   /[0-9]/.test(pw),
-      special:  /[^A-Za-z0-9]/.test(pw),
-      nocommon: !COMMON_PASSWORDS.has(pw.toLowerCase()),
-    };
-    const score = Object.values(reqs).filter(Boolean).length;
-    return { reqs, score };
-  }
-
-  /* ── Label & Farbe für Stärke-Stufen ─────────────────────────────────────── */
-  const STRENGTH_META = [
-    { label: 'Kein Passwort',  cls: 'strength-0', textCls: 'text-slate-600' },
-    { label: 'Sehr schwach',   cls: 'strength-1', textCls: 'badge-sehr-schwach' },
-    { label: 'Schwach',        cls: 'strength-2', textCls: 'badge-schwach' },
-    { label: 'Mittel',         cls: 'strength-3', textCls: 'badge-mittel' },
-    { label: 'Stark',          cls: 'strength-4', textCls: 'badge-stark' },
-    { label: 'Sehr stark 🔐',  cls: 'strength-5', textCls: 'badge-sehr-stark' },
-  ];
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      AUTH TAB SWITCH
-  ─────────────────────────────────────────────────────────────────────────── */
-  const tabLogin  = document.getElementById('authTabLogin');
-  const tabSignup = document.getElementById('authTabSignup');
-  const panelLogin  = document.getElementById('loginPanel');
-  const panelSignup = document.getElementById('signupPanel');
-
-  function switchToLogin() {
-    panelLogin.classList.remove('hidden');
-    panelSignup.classList.add('hidden');
-    tabLogin.classList.add('active');
-    tabSignup.classList.remove('active');
-  }
-
-  function switchToSignup() {
-    panelSignup.classList.remove('hidden');
-    panelLogin.classList.add('hidden');
-    tabSignup.classList.add('active');
-    tabLogin.classList.remove('active');
-  }
-
-  tabLogin?.addEventListener('click',  switchToLogin);
-  tabSignup?.addEventListener('click', switchToSignup);
-
-  /* Legacy-Buttons (falls JS aus app.js diese nutzt) */
-  document.getElementById('showLogin')?.addEventListener('click',  switchToLogin);
-  document.getElementById('showSignup')?.addEventListener('click', switchToSignup);
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      PASSWORT TOGGLE (Auge) – Login
-  ─────────────────────────────────────────────────────────────────────────── */
-  function makeEyeToggle(btnId, inputId) {
-    const btn   = document.getElementById(btnId);
-    const input = document.getElementById(inputId);
-    if (!btn || !input) return;
-    btn.addEventListener('click', () => {
-      const isText = input.type === 'text';
-      input.type = isText ? 'password' : 'text';
-      btn.querySelector('i').className = isText ? 'fas fa-eye' : 'fas fa-eye-slash';
-    });
-  }
-
-  makeEyeToggle('loginEye',        'loginPassword');
-  makeEyeToggle('signupEye',       'signupPassword');
-  makeEyeToggle('signupEyeConfirm','signupPasswordConfirm');
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      PASSWORT-STÄRKE LIVE-UPDATE
-  ─────────────────────────────────────────────────────────────────────────── */
-  const pwInput     = document.getElementById('signupPassword');
-  const pwBar       = document.getElementById('pwStrengthBar');
-  const pwLabel     = document.getElementById('pwStrengthLabel');
-  const pwScore     = document.getElementById('pwStrengthScore');
-  const pwTooltip   = document.getElementById('pwTooltip');
-  const reqItems    = document.querySelectorAll('#pwRequirements .pw-req-item');
-
-  /* Tooltip anzeigen/ausblenden */
-  pwInput?.addEventListener('focus', () => pwTooltip?.classList.add('visible'));
-  pwInput?.addEventListener('blur',  () => {
-    /* kleiner Delay damit Klick auf Anforderungen möglich wäre */
-    setTimeout(() => pwTooltip?.classList.remove('visible'), 200);
-  });
-
-  pwInput?.addEventListener('input', () => {
-    const val = pwInput.value;
-    const { reqs, score } = evaluatePassword(val);
-
-    /* Balken aktualisieren */
-    const displayScore = val.length === 0 ? 0 : score;
-    const meta = STRENGTH_META[displayScore] || STRENGTH_META[0];
-
-    if (pwBar) {
-      /* Alle Stärke-Klassen entfernen und neue setzen */
-      pwBar.className = 'pw-strength-bar';
-      pwBar.classList.add(meta.cls);
-    }
-
-    if (pwLabel) {
-      pwLabel.textContent = val.length === 0 ? 'Passwort eingeben' : meta.label;
-      pwLabel.className = `pw-strength-label ${meta.textCls}`;
-    }
-
-    if (pwScore) {
-      pwScore.textContent = val.length > 0 ? `${score}/6` : '';
-    }
-
-    /* Anforderungen einfärben */
-    reqItems.forEach(item => {
-      const reqKey = item.dataset.req;
-      if (reqs[reqKey]) {
-        item.classList.add('met');
-        item.querySelector('i').className = 'fas fa-circle-check';
-      } else {
-        item.classList.remove('met');
-        item.querySelector('i').className = 'fas fa-circle';
-      }
-    });
-
-    /* Passwort-Übereinstimmung prüfen (falls Confirm bereits ausgefüllt) */
-    const confirmInput = document.getElementById('signupPasswordConfirm');
-    if (confirmInput?.value) checkPasswordMatch();
-  });
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      PASSWORT BESTÄTIGEN – Live-Prüfung
-  ─────────────────────────────────────────────────────────────────────────── */
-  const pwConfirmInput = document.getElementById('signupPasswordConfirm');
-  const pwMatchMsg     = document.getElementById('pwMatchMsg');
-
-  function checkPasswordMatch() {
-    if (!pwConfirmInput || !pwInput || !pwMatchMsg) return;
-    const match = pwInput.value === pwConfirmInput.value;
-    if (!pwConfirmInput.value) {
-      pwMatchMsg.classList.add('hidden');
-      return;
-    }
-    pwMatchMsg.classList.remove('hidden');
-    if (match) {
-      pwMatchMsg.textContent = '✓ Passwörter stimmen überein';
-      pwMatchMsg.className = 'text-xs mt-1 pl-1 text-green-400';
-    } else {
-      pwMatchMsg.textContent = '✗ Passwörter stimmen nicht überein';
-      pwMatchMsg.className = 'text-xs mt-1 pl-1 text-red-400';
-    }
-  }
-
-  pwConfirmInput?.addEventListener('input', checkPasswordMatch);
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      REGISTRIERUNGSFORMULAR – Client-seitige Validierung
-      (verhindert Formular-Absenden, wenn Kriterien nicht erfüllt)
-  ─────────────────────────────────────────────────────────────────────────── */
-  document.getElementById('signupForm')?.addEventListener('submit', function (e) {
-    const pw      = pwInput?.value ?? '';
-    const pwConf  = pwConfirmInput?.value ?? '';
-    const terms   = document.getElementById('signupTerms');
-    const errEl   = document.getElementById('signupError');
-    const username = document.getElementById('signupUsername')?.value ?? '';
-    const { score } = evaluatePassword(pw);
-
-    const showErr = (msg) => {
-      if (!errEl) return;
-      errEl.textContent = msg;
-      errEl.classList.remove('hidden');
-      setTimeout(() => errEl.classList.add('hidden'), 5000);
-    };
-
-    /* Benutzername: mind. 3 Zeichen, nur erlaubte Zeichen */
-    if (!/^[a-zA-Z0-9_]{3,}$/.test(username)) {
-      e.preventDefault();
-      showErr('Benutzername: Mindestens 3 Zeichen, nur Buchstaben, Zahlen und Unterstriche.');
-      return;
-    }
-
-    /* Passwort-Stärke */
-    if (pw.length < 8) {
-      e.preventDefault();
-      showErr('Das Passwort muss mindestens 8 Zeichen lang sein.');
-      return;
-    }
-
-    if (score < 3) {
-      e.preventDefault();
-      showErr('Das Passwort ist zu schwach. Verwende Groß-/Kleinbuchstaben, Ziffern und Sonderzeichen.');
-      return;
-    }
-
-    /* Passwörter müssen übereinstimmen */
-    if (pw !== pwConf) {
-      e.preventDefault();
-      showErr('Die Passwörter stimmen nicht überein.');
-      return;
-    }
-
-    /* Nutzungsbedingungen */
-    if (terms && !terms.checked) {
-      e.preventDefault();
-      showErr('Bitte akzeptiere die Nutzungsbedingungen, um fortzufahren.');
-      return;
-    }
-  });
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      ANMELDE-SCHALTFLÄCHE – Ladezustand
-      (Das eigentliche Absenden übernimmt app.js)
-  ─────────────────────────────────────────────────────────────────────────── */
-  function attachLoadingSpinner(formId, btnId) {
-    const form = document.getElementById(formId);
-    const btn  = document.getElementById(btnId);
-    if (!form || !btn) return;
-
-    form.addEventListener('submit', () => {
-      btn.classList.add('loading');
-      btn.disabled = true;
-      /* Automatisch nach 8 s zurücksetzen (Fallback) */
-      setTimeout(() => {
-        btn.classList.remove('loading');
-        btn.disabled = false;
-      }, 8000);
-    });
-  }
-
-  attachLoadingSpinner('loginForm',  'loginBtn');
-  attachLoadingSpinner('signupForm', 'signupBtn');
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      GLOBALE HILFSFUNKTION: Auth-Spinner zurücksetzen
-      (kann von app.js aufgerufen werden: window.resetAuthSpinner('login'))
-  ─────────────────────────────────────────────────────────────────────────── */
-  window.resetAuthSpinner = function (which) {
-    const btnId = which === 'login' ? 'loginBtn' : 'signupBtn';
-    const btn   = document.getElementById(btnId);
-    if (btn) {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
-  };
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      SPRACH-LABEL: Standardmäßig Deutsch
-  ─────────────────────────────────────────────────────────────────────────── */
-  if (!localStorage.getItem('gss_lang')) {
-    localStorage.setItem('gss_lang', 'de');
-  }
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      AUTH OVERLAY ANZEIGEN
-      (Sichtbarkeit steuert app.js – hier nur sicherstellen,
-       dass das Overlay flex-Basis hat wenn es eingeblendet wird)
-  ─────────────────────────────────────────────────────────────────────────── */
-  const authOverlay = document.getElementById('authOverlay');
-  if (authOverlay) {
-    /* MutationObserver: Sobald 'hidden' entfernt wird, flex setzen */
-    const observer = new MutationObserver(() => {
-      if (!authOverlay.classList.contains('hidden')) {
-        authOverlay.style.display = 'flex';
-      } else {
-        authOverlay.style.display = '';
-      }
-    });
-    observer.observe(authOverlay, { attributes: true, attributeFilter: ['class'] });
-  }
-
-  /* ──────────────────────────────────────────────────────────────────────────
-      TOAST HILFSFUNKTION (global) – wird von app.js ggf. ergänzt
-  ─────────────────────────────────────────────────────────────────────────── */
-  if (!window.showToast) {
-    window.showToast = function (message, type) {
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
-
-      const typeMap = {
-        success: 'border-green-500/40 bg-green-500/10 text-green-300',
-        error:   'border-red-500/40   bg-red-500/10   text-red-300',
-        info:    'border-cyan-500/40  bg-cyan-500/10  text-cyan-300',
-        warn:    'border-yellow-500/40 bg-yellow-500/10 text-yellow-300',
-      };
-      const cls = typeMap[type] || typeMap.info;
-
-      const toast = document.createElement('div');
-      toast.className = `pointer-events-auto glass-panel border rounded-xl px-4 py-3 text-sm font-rajdhani max-w-xs ${cls}
-        transform translate-x-full transition-transform duration-300`;
-      toast.textContent = message;
-      container.appendChild(toast);
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => toast.classList.remove('translate-x-full'));
-      });
-
-      setTimeout(() => {
-        toast.classList.add('translate-x-full');
-        toast.addEventListener('transitionend', () => toast.remove());
-      }, 3500);
-    };
-  }
-
-})();
-</script>
-
-<!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!--  HAUPT-APP SCRIPTS                                                         -->
+<!--  SCRIPTS                                                                   -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <script type="module" src="js/app.js"></script>
 
@@ -1467,3 +780,10 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
