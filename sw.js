@@ -2,13 +2,11 @@
  * sw.js — Service Worker
  * Das Gleichgewichtsspiel Pro Edition
  * Enables offline gameplay and asset caching.
- * Author: Higer
  */
 
-const CACHE_NAME   = 'gleichgewicht-pro-v2';
-const STATIC_CACHE = 'gleichgewicht-static-v2';
+const CACHE_NAME   = 'gleichgewicht-pro-v3';
+const STATIC_CACHE = 'gleichgewicht-static-v3';
 
-// Assets to pre-cache on install
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
@@ -20,10 +18,13 @@ const PRECACHE_ASSETS = [
   '/js/i18n.js',
   '/js/audio.js',
   '/js/stats.js',
+  '/js/admin.js',
+  '/js/auth.js',
+  '/js/firebase-config.js',
+  '/js/social.js',
   '/manifest.json',
 ];
 
-// External CDN URLs to cache on first fetch
 const CDN_CACHE_PATTERNS = [
   'fonts.googleapis.com',
   'fonts.gstatic.com',
@@ -31,7 +32,6 @@ const CDN_CACHE_PATTERNS = [
   'cdn.tailwindcss.com',
 ];
 
-// ─── Install ─────────────────────────────────────────────────
 self.addEventListener('install', (e) => {
   console.log('[SW] Installing...', CACHE_NAME);
   e.waitUntil(
@@ -42,7 +42,6 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// ─── Activate ────────────────────────────────────────────────
 self.addEventListener('activate', (e) => {
   console.log('[SW] Activating...', CACHE_NAME);
   e.waitUntil(
@@ -50,20 +49,18 @@ self.addEventListener('activate', (e) => {
       Promise.all(
         keys
           .filter((k) => k !== STATIC_CACHE && k !== CACHE_NAME)
-          .map((k) => { console.log('[SW] Deleting old cache:', k); return caches.delete(k); })
+          .map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// ─── Fetch Strategy ──────────────────────────────────────────
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
-  // Skip non-GET and chrome-extension requests
   if (e.request.method !== 'GET' || url.protocol === 'chrome-extension:') return;
 
-  // CDN resources: Cache-first
+  // CDN: Cache-first
   if (CDN_CACHE_PATTERNS.some((p) => url.hostname.includes(p))) {
     e.respondWith(
       caches.match(e.request).then((cached) =>
@@ -79,7 +76,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Local assets: Network-first (fallback to cache)
+  // Local assets: Network-first
   if (url.origin === self.location.origin) {
     e.respondWith(
       fetch(e.request)

@@ -1,2009 +1,782 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚙️ Systemwartung — Guthaben-Schulden-Spiel Pro</title>
+  <meta name="description" content="Guthaben-Schulden-Spiel Pro – Lerne Addition und Subtraktion mit positiven und negativen Zahlen." />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Guthaben-Schulden-Spiel · Pro Edition</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 
-  <style>
-    /* =========================================================
-       ROOT & RESET
-    ========================================================= */
-    :root {
-      --bg-deep:     #0a0c14;
-      --bg-mid:      #111420;
-      --bg-panel:    #151824;
-      --amber:       #f5a623;
-      --amber-dim:   #c4821a;
-      --amber-glow:  rgba(245,166,35,0.18);
-      --cyan:        #00e5ff;
-      --cyan-dim:    #00aacc;
-      --red:         #ff4444;
-      --green:       #00ff88;
-      --white:       #f0f2ff;
-      --muted:       #8892b0;
-      --border:      rgba(245,166,35,0.25);
-      --panel-border:rgba(255,255,255,0.06);
-      --radius:      12px;
-      --radius-lg:   20px;
-    }
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            orbitron: ['Orbitron','sans-serif'],
+            rajdhani:  ['Rajdhani','sans-serif'],
+            mono:      ['JetBrains Mono','monospace'],
+          },
+          colors: {
+            'game-bg': '#0d1117',
+          },
+        },
+      },
+    };
+  </script>
 
-    html { scroll-behavior: smooth; }
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-    body {
-      background: var(--bg-deep);
-      color: var(--white);
-      font-family: 'Space Mono', monospace;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-    }
-
-    /* =========================================================
-       STAR-FIELD BACKGROUND
-    ========================================================= */
-    .starfield {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      overflow: hidden;
-      pointer-events: none;
-    }
-    .starfield::before,
-    .starfield::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image:
-        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 15% 75%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 45% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 65% 25%, rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 85% 65%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 25% 35%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 55% 90%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 75% 5%,  rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 5%  50%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 80% 45%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 20% 85%, rgba(255,255,255,0.3) 0%, transparent 100%),
-        radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,0.6) 0%, transparent 100%),
-        radial-gradient(1px 1px at 40% 95%, rgba(255,255,255,0.4) 0%, transparent 100%),
-        radial-gradient(1px 1px at 95% 20%, rgba(255,255,255,0.5) 0%, transparent 100%),
-        radial-gradient(1px 1px at 48% 42%, rgba(255,255,255,0.3) 0%, transparent 100%);
-      animation: twinkle 6s infinite alternate;
-    }
-    .starfield::after {
-      background-position: 50px 30px;
-      animation-duration: 9s;
-      animation-direction: alternate-reverse;
-    }
-    @keyframes twinkle {
-      0%   { opacity: 0.3; }
-      100% { opacity: 1; }
-    }
-
-    /* =========================================================
-       GRID OVERLAY
-    ========================================================= */
-    .grid-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      pointer-events: none;
-      background-image:
-        linear-gradient(rgba(245,166,35,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245,166,35,0.03) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
-
-    /* =========================================================
-       SCAN-LINE EFFECT
-    ========================================================= */
-    .scanlines {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.08) 2px,
-        rgba(0,0,0,0.08) 4px
-      );
-    }
-
-    /* =========================================================
-       MAIN WRAPPER
-    ========================================================= */
-    .wrapper {
-      position: relative;
-      z-index: 2;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 40px 24px 80px;
-    }
-
-    /* =========================================================
-       TOP WARNING STRIP
-    ========================================================= */
-    .warning-strip {
-      background: repeating-linear-gradient(
-        -45deg,
-        var(--amber) 0px,
-        var(--amber) 14px,
-        #000 14px,
-        #000 28px
-      );
-      height: 8px;
-      width: 100%;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 100;
-    }
-    .warning-strip-bottom {
-      bottom: 0;
-      top: auto;
-    }
-
-    /* =========================================================
-       STATUS BAR
-    ========================================================= */
-    .status-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 18px;
-      background: rgba(245,166,35,0.08);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      margin-bottom: 40px;
-      margin-top: 20px;
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    .status-bar .led {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--red);
-      display: inline-block;
-      margin-right: 8px;
-      animation: blink 1s infinite;
-      box-shadow: 0 0 6px var(--red);
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: 0.15; }
-    }
-    .status-bar .tag {
-      color: var(--amber);
-      font-weight: 700;
-    }
-    .status-time {
-      color: var(--muted);
-      font-family: 'Space Mono', monospace;
-      font-size: 10px;
-    }
-
-    /* =========================================================
-       LOGO / TITLE AREA
-    ========================================================= */
-    .logo-area {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-    .logo-icon {
-      font-size: 56px;
-      display: block;
-      animation: float 4s ease-in-out infinite;
-      filter: drop-shadow(0 0 16px rgba(245,166,35,0.6));
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0);    }
-      50%       { transform: translateY(-10px); }
-    }
-    .logo-title {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(22px, 5vw, 38px);
-      background: linear-gradient(135deg, var(--amber) 0%, #fff7cc 50%, var(--amber-dim) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.02em;
-      margin: 12px 0 4px;
-    }
-    .logo-sub {
-      font-size: 11px;
-      letter-spacing: 0.3em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-
-    /* =========================================================
-       BIG MAINTENANCE BADGE
-    ========================================================= */
-    .maintenance-badge {
-      text-align: center;
-      margin: 32px 0 20px;
-    }
-    .badge-inner {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(255,68,68,0.12);
-      border: 1.5px solid rgba(255,68,68,0.45);
-      border-radius: 50px;
-      padding: 10px 28px;
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--red);
-      animation: badge-pulse 2s ease-in-out infinite;
-    }
-    @keyframes badge-pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.4); }
-      50%       { box-shadow: 0 0 0 12px rgba(255,68,68,0); }
-    }
-
-    /* =========================================================
-       APOLOGY CARD
-    ========================================================= */
-    .apology-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      padding: 36px 40px;
-      margin-bottom: 32px;
-      position: relative;
-      overflow: hidden;
-    }
-    .apology-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(ellipse at top left, rgba(245,166,35,0.06) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .apology-card h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--amber);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .apology-card p {
-      color: #c8d0e8;
-      line-height: 1.85;
-      font-size: 13.5px;
-      margin-bottom: 14px;
-    }
-    .apology-card p:last-child { margin-bottom: 0; }
-    .apology-card .highlight {
-      color: var(--amber);
-      font-weight: 700;
-    }
-    .apology-card .em {
-      color: var(--cyan);
-    }
-
-    /* =========================================================
-       COUNTDOWN SECTION
-    ========================================================= */
-    .countdown-section {
-      background: var(--bg-panel);
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 32px 40px;
-      margin-bottom: 32px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .countdown-section::after {
-      content: '';
-      position: absolute;
-      bottom: -40px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 200px;
-      height: 80px;
-      background: radial-gradient(ellipse, rgba(245,166,35,0.25) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .countdown-label {
-      font-size: 11px;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-    .countdown-grid {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .countdown-unit {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-    }
-    .countdown-number {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: clamp(36px, 8vw, 68px);
-      line-height: 1;
-      background: linear-gradient(180deg, #fff 0%, var(--amber) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      min-width: 80px;
-      text-align: center;
-      transition: transform 0.2s ease;
-    }
-    .countdown-number.tick {
-      animation: tickFlip 0.3s ease;
-    }
-    @keyframes tickFlip {
-      0%   { transform: scaleY(0.7); opacity: 0.4; }
-      100% { transform: scaleY(1);   opacity: 1; }
-    }
-    .countdown-name {
-      font-size: 9px;
-      letter-spacing: 0.25em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .countdown-sep {
-      font-family: 'Syne', sans-serif;
-      font-size: 52px;
-      color: var(--amber);
-      opacity: 0.4;
-      line-height: 1;
-      align-self: flex-start;
-      margin-top: 12px;
-      animation: blink 1s infinite;
-    }
-    .countdown-note {
-      margin-top: 18px;
-      font-size: 12px;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-    .countdown-note .target-date {
-      color: var(--amber);
-      font-weight: 700;
-    }
-
-    /* =========================================================
-       WORKERS SCENE
-    ========================================================= */
-    .workers-section {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      padding: 28px 24px 12px;
-      margin-bottom: 32px;
-      overflow: hidden;
-    }
-    .workers-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--muted);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      text-align: center;
-      margin-bottom: 24px;
-    }
-    .scene {
-      position: relative;
-      height: 200px;
-      background: linear-gradient(180deg, transparent 0%, rgba(245,166,35,0.04) 100%);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    /* Floor */
-    .scene::before {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--amber), transparent);
-      opacity: 0.4;
-    }
-
-    /* ---- generic worker ---- */
-    .worker {
-      position: absolute;
-      bottom: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .worker-body {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    /* --- WORKER 1 — Hammering --- */
-    .w1 { left: 6%; animation: walk-idle 0s; }
-    .w1 .head {
-      width: 22px; height: 22px;
-      background: #f4c27a;
-      border-radius: 50% 50% 45% 45%;
-      position: relative;
-      z-index: 2;
-    }
-    .w1 .head::before {
-      content: '🪖';
-      position: absolute;
-      top: -14px;
-      left: -2px;
-      font-size: 20px;
-    }
-    .w1 .head::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 3px;
-      width: 16px; height: 8px;
-      background: #e05500;
-      border-radius: 0 0 6px 6px;
-    }
-    .w1 .torso {
-      width: 26px; height: 28px;
-      background: linear-gradient(180deg, #f5a623 0%, #e08000 100%);
-      border-radius: 4px;
-      margin-top: -2px;
-    }
-    .w1 .arm-right {
-      position: absolute;
-      top: 28px;
-      right: -14px;
-      width: 18px; height: 8px;
-      background: #e08000;
-      border-radius: 4px;
-      transform-origin: left center;
-      animation: hammer-arm 0.5s ease-in-out infinite alternate;
-    }
-    .w1 .arm-right::after {
-      content: '🔨';
-      position: absolute;
-      right: -14px;
-      top: -8px;
-      font-size: 16px;
-    }
-    .w1 .arm-left {
-      position: absolute;
-      top: 28px;
-      left: -14px;
-      width: 18px; height: 8px;
-      background: #e08000;
-      border-radius: 4px;
-      transform-origin: right center;
-      animation: hammer-arm-left 0.5s ease-in-out infinite alternate;
-    }
-    .w1 .legs {
-      display: flex;
-      gap: 4px;
-      margin-top: 0;
-    }
-    .w1 .leg {
-      width: 10px; height: 18px;
-      background: #333;
-      border-radius: 3px;
-    }
-    .w1 .leg:last-child {
-      animation: leg-bob 0.5s ease-in-out infinite alternate;
-    }
-    @keyframes hammer-arm {
-      0%   { transform: rotate(-40deg); }
-      100% { transform: rotate(20deg); }
-    }
-    @keyframes hammer-arm-left {
-      0%   { transform: rotate(30deg); }
-      100% { transform: rotate(-10deg); }
-    }
-    @keyframes leg-bob {
-      0%   { transform: translateY(0); }
-      100% { transform: translateY(-3px); }
-    }
-
-    /* Ground cracks under hammer worker */
-    .crack {
-      position: absolute;
-      bottom: 8px;
-      font-size: 13px;
-      animation: crack-appear 0.5s ease-in-out infinite alternate;
-    }
-    .crack-1 { left: 9%; }
-    @keyframes crack-appear {
-      0%   { opacity: 0; transform: scale(0.7); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-
-    /* --- WORKER 2 — Wrench / Plumber --- */
-    .w2 { left: 25%; }
-    .w2 .head {
-      width: 22px; height: 22px;
-      background: #f4c27a;
-      border-radius: 50% 50% 45% 45%;
-      position: relative; z-index: 2;
-    }
-    .w2 .head::before {
-      content: '👷';
-      position: absolute;
-      top: -20px;
-      left: -5px;
-      font-size: 22px;
-    }
-    .w2 .torso {
-      width: 26px; height: 28px;
-      background: linear-gradient(180deg, #1e88e5 0%, #1565c0 100%);
-      border-radius: 4px;
-      margin-top: -2px;
-    }
-    .w2 .arm-right {
-      position: absolute;
-      top: 26px;
-      right: -18px;
-      width: 20px; height: 8px;
-      background: #1565c0;
-      border-radius: 4px;
-      transform-origin: left center;
-      animation: wrench-spin 1.2s linear infinite;
-    }
-    .w2 .arm-right::after {
-      content: '🔧';
-      position: absolute;
-      right: -16px;
-      top: -8px;
-      font-size: 18px;
-    }
-    .w2 .legs { display: flex; gap: 4px; }
-    .w2 .leg {
-      width: 10px; height: 18px;
-      background: #1a237e;
-      border-radius: 3px;
-    }
-    @keyframes wrench-spin {
-      0%   { transform: rotate(-15deg); }
-      25%  { transform: rotate(15deg); }
-      50%  { transform: rotate(-15deg); }
-      75%  { transform: rotate(15deg); }
-      100% { transform: rotate(-15deg); }
-    }
-
-    /* --- WORKER 3 — Laptop / Dev --- */
-    .w3 { left: 48%; bottom: 8px; }
-    .w3-desk {
-      width: 60px; height: 8px;
-      background: #4a3728;
-      border-radius: 3px;
-      position: relative;
-    }
-    .w3-desk::before {
-      content: '💻';
-      position: absolute;
-      top: -22px;
-      left: 4px;
-      font-size: 26px;
-      animation: typing-blink 0.4s step-start infinite;
-    }
-    .w3 .head {
-      width: 22px; height: 22px;
-      background: #f4c27a;
-      border-radius: 50%;
-      position: relative; z-index: 2;
-      margin-bottom: -2px;
-      animation: nod 1.5s ease-in-out infinite alternate;
-    }
-    .w3 .head::before {
-      content: '🕶️';
-      position: absolute;
-      top: 4px;
-      left: -2px;
-      font-size: 15px;
-    }
-    .w3 .torso {
-      width: 26px; height: 26px;
-      background: linear-gradient(180deg, #6a1b9a 0%, #4a148c 100%);
-      border-radius: 4px;
-    }
-    .w3 .legs { display: flex; gap: 4px; }
-    .w3 .leg {
-      width: 10px; height: 16px;
-      background: #212121;
-      border-radius: 3px;
-    }
-    @keyframes nod {
-      0%   { transform: rotate(-5deg); }
-      100% { transform: rotate(5deg); }
-    }
-    @keyframes typing-blink {
-      0%, 49% { opacity: 1; }
-      50%,100% { opacity: 0.6; }
-    }
-
-    /* --- WORKER 4 — Electrician with sparks --- */
-    .w4 { right: 18%; }
-    .w4 .head {
-      width: 22px; height: 22px;
-      background: #f4c27a;
-      border-radius: 50% 50% 45% 45%;
-      position: relative; z-index: 2;
-    }
-    .w4 .head::before {
-      content: '⛑️';
-      position: absolute;
-      top: -16px; left: -2px;
-      font-size: 20px;
-    }
-    .w4 .torso {
-      width: 26px; height: 28px;
-      background: linear-gradient(180deg, #f9a825 0%, #e65100 100%);
-      border-radius: 4px;
-      margin-top: -2px;
-    }
-    .w4 .arm-right {
-      position: absolute;
-      top: 26px;
-      right: -20px;
-      width: 22px; height: 8px;
-      background: #e65100;
-      border-radius: 4px;
-    }
-    .w4 .arm-right::after {
-      content: '⚡';
-      position: absolute;
-      right: -16px;
-      top: -10px;
-      font-size: 20px;
-      animation: zap 0.3s step-start infinite;
-    }
-    .w4 .legs { display: flex; gap: 4px; }
-    .w4 .leg {
-      width: 10px; height: 18px;
-      background: #37474f;
-      border-radius: 3px;
-    }
-    @keyframes zap {
-      0%   { opacity: 1;   transform: translate(0,0) rotate(0deg);  }
-      33%  { opacity: 0.5; transform: translate(3px,-3px) rotate(15deg); }
-      66%  { opacity: 1;   transform: translate(-2px,2px) rotate(-10deg); }
-      100% { opacity: 1;   transform: translate(0,0) rotate(0deg);  }
-    }
-
-    /* --- WORKER 5 — Painter --- */
-    .w5 { right: 4%; }
-    .w5 .head {
-      width: 22px; height: 22px;
-      background: #f4c27a;
-      border-radius: 50% 50% 45% 45%;
-      position: relative; z-index: 2;
-    }
-    .w5 .head::before {
-      content: '🎨';
-      position: absolute;
-      top: -18px; left: -4px;
-      font-size: 18px;
-    }
-    .w5 .torso {
-      width: 26px; height: 28px;
-      background: linear-gradient(180deg, #ffffff 0%, #cfd8dc 100%);
-      border-radius: 4px;
-      margin-top: -2px;
-    }
-    .w5 .arm-right {
-      position: absolute;
-      top: 24px;
-      right: -18px;
-      width: 20px; height: 8px;
-      background: #cfd8dc;
-      border-radius: 4px;
-      transform-origin: left center;
-      animation: paint-stroke 1.2s ease-in-out infinite alternate;
-    }
-    .w5 .arm-right::after {
-      content: '🖌️';
-      position: absolute;
-      right: -14px;
-      top: -10px;
-      font-size: 18px;
-    }
-    .w5 .legs { display: flex; gap: 4px; }
-    .w5 .leg {
-      width: 10px; height: 18px;
-      background: #37474f;
-      border-radius: 3px;
-    }
-    @keyframes paint-stroke {
-      0%   { transform: translateY(-8px) rotate(-20deg); }
-      100% { transform: translateY(4px) rotate(20deg); }
-    }
-
-    /* Paint drips floating */
-    .paint-drip {
-      position: absolute;
-      font-size: 12px;
-      animation: drip 2s ease-in infinite;
-    }
-    .paint-drip:nth-child(1) { right: 8%;  top: 20px; animation-delay: 0s; }
-    .paint-drip:nth-child(2) { right: 11%; top: 40px; animation-delay: 0.7s; }
-    .paint-drip:nth-child(3) { right: 5%;  top: 30px; animation-delay: 1.3s; }
-    @keyframes drip {
-      0%   { opacity: 0; transform: translateY(0); }
-      20%  { opacity: 1; }
-      100% { opacity: 0; transform: translateY(60px); }
-    }
-
-    /* Flying tools */
-    .flying-tool {
-      position: absolute;
-      font-size: 18px;
-      animation: fly-across 8s linear infinite;
-    }
-    .flying-tool:nth-child(1) { top: 20px; animation-delay: 0s;  }
-    .flying-tool:nth-child(2) { top: 60px; animation-delay: 3s;  font-size: 14px; }
-    .flying-tool:nth-child(3) { top: 40px; animation-delay: 6s;  font-size: 22px; }
-    @keyframes fly-across {
-      0%   { left: -5%; opacity: 0; transform: rotate(0deg); }
-      5%   { opacity: 1; }
-      95%  { opacity: 1; }
-      100% { left: 110%; opacity: 0; transform: rotate(360deg); }
-    }
-
-    /* Sparks burst */
-    .sparks {
-      position: absolute;
-      right: 22%;
-      bottom: 40px;
-    }
-    .spark {
-      position: absolute;
-      width: 3px; height: 3px;
-      border-radius: 50%;
-      background: var(--amber);
-      animation: sparkfly 0.8s ease-out infinite;
-    }
-    .spark:nth-child(1) { animation-delay: 0s;    --dx: -20px; --dy: -30px; }
-    .spark:nth-child(2) { animation-delay: 0.15s; --dx: 20px;  --dy: -28px; }
-    .spark:nth-child(3) { animation-delay: 0.3s;  --dx: -10px; --dy: -35px; }
-    .spark:nth-child(4) { animation-delay: 0.45s; --dx: 15px;  --dy: -32px; background: var(--cyan); }
-    .spark:nth-child(5) { animation-delay: 0.6s;  --dx: -5px;  --dy: -38px; background: #fff; }
-    @keyframes sparkfly {
-      0%   { opacity: 1; transform: translate(0, 0) scale(1); }
-      100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
-    }
-
-    /* Smoke puffs */
-    .smoke-puff {
-      position: absolute;
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,200,200,0.5) 0%, transparent 70%);
-      animation: puff-rise 2.5s ease-out infinite;
-    }
-    .smoke-puff:nth-child(1) { left: 8%;  bottom: 55px; animation-delay: 0s;   width: 24px; height: 24px; }
-    .smoke-puff:nth-child(2) { left: 28%; bottom: 58px; animation-delay: 0.8s;  width: 18px; height: 18px; }
-    .smoke-puff:nth-child(3) { left: 50%; bottom: 60px; animation-delay: 1.5s;  width: 20px; height: 20px; }
-    @keyframes puff-rise {
-      0%   { opacity: 0; transform: translateY(0) scale(0.5); }
-      30%  { opacity: 0.7; }
-      100% { opacity: 0; transform: translateY(-50px) scale(2); }
-    }
-
-    /* =========================================================
-       PROGRESS / TASK LIST
-    ========================================================= */
-    .task-section {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      padding: 28px 32px;
-      margin-bottom: 32px;
-    }
-    .task-section h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--amber);
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .task-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--panel-border);
-    }
-    .task-item:last-child { border-bottom: none; }
-    .task-icon { font-size: 18px; flex-shrink: 0; }
-    .task-info { flex: 1; }
-    .task-name {
-      font-size: 13px;
-      color: var(--white);
-      margin-bottom: 6px;
-    }
-    .task-bar-bg {
-      height: 5px;
-      background: rgba(255,255,255,0.07);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-    .task-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      animation: bar-grow 2s ease-out forwards;
-      position: relative;
-    }
-    .task-bar-fill.amber { background: linear-gradient(90deg, var(--amber-dim), var(--amber)); }
-    .task-bar-fill.cyan  { background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); }
-    .task-bar-fill.red   { background: linear-gradient(90deg, #cc2222, var(--red)); }
-    .task-bar-fill.green { background: linear-gradient(90deg, #00aa55, var(--green)); }
-    @keyframes bar-grow {
-      from { width: 0 !important; }
-    }
-    .task-status {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      color: var(--muted);
-      flex-shrink: 0;
-      min-width: 70px;
-      text-align: right;
-    }
-    .task-status.running { color: var(--amber); }
-    .task-status.done    { color: var(--green); }
-
-    /* =========================================================
-       TERMINAL LOG
-    ========================================================= */
-    .terminal {
-      background: #0a0c10;
-      border: 1px solid rgba(0,229,255,0.2);
-      border-radius: var(--radius);
-      padding: 20px 22px;
-      margin-bottom: 32px;
-      font-family: 'Space Mono', monospace;
-      font-size: 11.5px;
-      line-height: 2;
-      position: relative;
-      overflow: hidden;
-    }
-    .terminal-header {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .terminal-dot {
-      width: 10px; height: 10px;
-      border-radius: 50%;
-    }
-    .terminal-dot:nth-child(1) { background: #ff5f56; }
-    .terminal-dot:nth-child(2) { background: #ffbd2e; }
-    .terminal-dot:nth-child(3) { background: #27c93f; }
-    .terminal-title {
-      margin-left: 8px;
-      color: var(--muted);
-      font-size: 11px;
-      letter-spacing: 0.05em;
-    }
-    .log-line { display: flex; gap: 10px; }
-    .log-line .ts  { color: rgba(255,255,255,0.2); flex-shrink: 0; }
-    .log-line .lvl { flex-shrink: 0; }
-    .log-line .lvl.err  { color: var(--red); }
-    .log-line .lvl.warn { color: var(--amber); }
-    .log-line .lvl.info { color: var(--cyan); }
-    .log-line .lvl.ok   { color: var(--green); }
-    .log-line .msg { color: #c8d0e8; }
-    .log-line .msg .val { color: var(--cyan); }
-    .cursor-blink {
-      display: inline-block;
-      width: 8px; height: 14px;
-      background: var(--cyan);
-      vertical-align: middle;
-      animation: blink 1s step-start infinite;
-      margin-left: 4px;
-    }
-
-    /* =========================================================
-       SECOND APOLOGY BLOCK — EXTRA DRAMATIC
-    ========================================================= */
-    .big-sorry {
-      background: linear-gradient(135deg, rgba(255,68,68,0.07) 0%, rgba(10,12,20,0) 60%);
-      border: 1.5px solid rgba(255,68,68,0.2);
-      border-radius: var(--radius-lg);
-      padding: 36px 40px;
-      margin-bottom: 32px;
-      text-align: center;
-      position: relative;
-    }
-    .big-sorry .sorry-emoji {
-      font-size: 60px;
-      display: block;
-      margin-bottom: 12px;
-      animation: sway 2.5s ease-in-out infinite;
-    }
-    @keyframes sway {
-      0%, 100% { transform: rotate(-5deg); }
-      50%       { transform: rotate(5deg); }
-    }
-    .big-sorry h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(22px, 5vw, 34px);
-      font-weight: 800;
-      color: var(--white);
-      margin-bottom: 14px;
-      letter-spacing: -0.02em;
-    }
-    .big-sorry p {
-      color: #a0aacc;
-      font-size: 13px;
-      line-height: 1.9;
-      max-width: 580px;
-      margin: 0 auto 12px;
-    }
-
-    /* =========================================================
-       FAQ / INFO GRID
-    ========================================================= */
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-bottom: 32px;
-    }
-    .info-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      padding: 22px;
-      position: relative;
-    }
-    .info-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0;
-      width: 3px; height: 100%;
-      background: var(--amber);
-      border-radius: 3px 0 0 3px;
-      opacity: 0.6;
-    }
-    .info-card.cyan-accent::before { background: var(--cyan); }
-    .info-card.green-accent::before { background: var(--green); }
-    .info-card .ic-icon { font-size: 22px; margin-bottom: 10px; display: block; }
-    .info-card .ic-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: 8px;
-    }
-    .info-card .ic-body {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.8;
-    }
-
-    /* =========================================================
-       TIMELINE
-    ========================================================= */
-    .timeline-section {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      padding: 28px 32px;
-      margin-bottom: 32px;
-    }
-    .timeline-section h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--amber);
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tl-item {
-      display: flex;
-      gap: 18px;
-      padding-bottom: 24px;
-      position: relative;
-    }
-    .tl-item:last-child { padding-bottom: 0; }
-    .tl-item::before {
-      content: '';
-      position: absolute;
-      left: 11px;
-      top: 24px;
-      bottom: 0;
-      width: 1px;
-      background: var(--panel-border);
-    }
-    .tl-item:last-child::before { display: none; }
-    .tl-dot {
-      width: 24px; height: 24px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-    .tl-dot.done    { background: rgba(0,255,136,0.15); border: 1.5px solid var(--green); }
-    .tl-dot.active  { background: rgba(245,166,35,0.15); border: 1.5px solid var(--amber); animation: pulse-ring 2s infinite; }
-    .tl-dot.pending { background: rgba(136,146,176,0.1); border: 1.5px solid rgba(136,146,176,0.3); }
-    @keyframes pulse-ring {
-      0%, 100% { box-shadow: 0 0 0 0   rgba(245,166,35,0.5); }
-      50%       { box-shadow: 0 0 0 6px rgba(245,166,35,0); }
-    }
-    .tl-content .tl-time {
-      font-size: 10px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .tl-content .tl-title {
-      font-size: 13px;
-      color: var(--white);
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-    .tl-content .tl-desc {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.7;
-    }
-
-    /* =========================================================
-       NEWSLETTER / NOTIFY FORM
-    ========================================================= */
-    .notify-section {
-      background: var(--bg-panel);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius-lg);
-      padding: 30px 32px;
-      margin-bottom: 32px;
-      text-align: center;
-    }
-    .notify-section h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--white);
-      margin-bottom: 8px;
-    }
-    .notify-section p {
-      font-size: 12.5px;
-      color: var(--muted);
-      margin-bottom: 20px;
-    }
-    .notify-form {
-      display: flex;
-      gap: 10px;
-      max-width: 440px;
-      margin: 0 auto;
-    }
-    .notify-input {
-      flex: 1;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--panel-border);
-      border-radius: var(--radius);
-      padding: 10px 16px;
-      color: var(--white);
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    .notify-input:focus { border-color: var(--amber); }
-    .notify-input::placeholder { color: var(--muted); }
-    .notify-btn {
-      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dim) 100%);
-      border: none;
-      border-radius: var(--radius);
-      padding: 10px 20px;
-      color: #000;
-      font-family: 'Space Mono', monospace;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 0.05em;
-      transition: opacity 0.2s, transform 0.1s;
-      white-space: nowrap;
-    }
-    .notify-btn:hover  { opacity: 0.85; }
-    .notify-btn:active { transform: scale(0.97); }
-    .notify-success {
-      display: none;
-      color: var(--green);
-      font-size: 13px;
-      margin-top: 12px;
-    }
-
-    /* =========================================================
-       FOOTER
-    ========================================================= */
-    .footer {
-      text-align: center;
-      padding: 24px 0;
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.08em;
-      border-top: 1px solid var(--panel-border);
-    }
-    .footer a {
-      color: var(--amber);
-      text-decoration: none;
-    }
-    .footer .version {
-      display: inline-block;
-      background: rgba(245,166,35,0.1);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 10px;
-      margin-top: 6px;
-    }
-
-    /* =========================================================
-       FLOATING PARTICLES
-    ========================================================= */
-    .particles {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      overflow: hidden;
-    }
-    .particle {
-      position: absolute;
-      border-radius: 50%;
-      opacity: 0;
-      animation: particle-float linear infinite;
-    }
-    @keyframes particle-float {
-      0%   { opacity: 0; transform: translateY(100vh) rotate(0deg) scale(0); }
-      10%  { opacity: 0.6; transform: translateY(85vh)  rotate(36deg)  scale(1); }
-      90%  { opacity: 0.4; transform: translateY(10vh)  rotate(324deg) scale(0.8); }
-      100% { opacity: 0;   transform: translateY(-5vh)  rotate(360deg) scale(0); }
-    }
-
-    /* =========================================================
-       GLITCH TEXT EFFECT
-    ========================================================= */
-    .glitch {
-      position: relative;
-      display: inline-block;
-    }
-    .glitch::before,
-    .glitch::after {
-      content: attr(data-text);
-      position: absolute;
-      inset: 0;
-      background: transparent;
-    }
-    .glitch::before {
-      color: var(--cyan);
-      left: 2px;
-      animation: glitch-1 3s infinite linear;
-      clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
-    }
-    .glitch::after {
-      color: var(--red);
-      left: -2px;
-      animation: glitch-2 3s infinite linear;
-      clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-    }
-    @keyframes glitch-1 {
-      0%,94%  { transform: translate(0); opacity: 0; }
-      95%     { transform: translate(-3px, 1px); opacity: 0.8; }
-      97%     { transform: translate(3px, -1px); opacity: 0.8; }
-      100%    { transform: translate(0); opacity: 0; }
-    }
-    @keyframes glitch-2 {
-      0%,96%  { transform: translate(0); opacity: 0; }
-      97%     { transform: translate(3px, 2px); opacity: 0.8; }
-      99%     { transform: translate(-3px, -2px); opacity: 0.8; }
-      100%    { transform: translate(0); opacity: 0; }
-    }
-
-    /* =========================================================
-       PING ANIMATION FOR WORKERS LABEL
-    ========================================================= */
-    .ping-dot {
-      position: relative;
-      display: inline-flex;
-      width: 10px; height: 10px;
-    }
-    .ping-dot span:first-child {
-      position: absolute;
-      inset: 0;
-      border-radius: 50%;
-      background: var(--amber);
-      opacity: 0.75;
-      animation: ping 1.2s cubic-bezier(0,0,0.2,1) infinite;
-    }
-    .ping-dot span:last-child {
-      position: relative;
-      width: 100%; height: 100%;
-      border-radius: 50%;
-      background: var(--amber);
-      display: block;
-    }
-    @keyframes ping {
-      75%, 100% { transform: scale(2.5); opacity: 0; }
-    }
-
-    /* =========================================================
-       RESPONSIVE
-    ========================================================= */
-    @media (max-width: 600px) {
-      .apology-card, .countdown-section, .task-section,
-      .big-sorry, .notify-section, .timeline-section {
-        padding: 22px 20px;
-      }
-      .notify-form {
-        flex-direction: column;
-      }
-      .countdown-number { min-width: 60px; }
-      .countdown-sep { font-size: 36px; }
-      .scene { height: 160px; }
-      .w3 { display: none; }
-    }
-  </style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
 
-  <!-- background layers -->
-  <div class="starfield" aria-hidden="true"></div>
-  <div class="grid-overlay" aria-hidden="true"></div>
-  <div class="scanlines" aria-hidden="true"></div>
+<body class="bg-game-bg font-rajdhani text-slate-200 min-h-screen overflow-x-hidden">
 
-  <!-- floating particles (created by JS) -->
-  <div class="particles" id="particles" aria-hidden="true"></div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  CANVAS LAYERS                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true"></canvas>
+<canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50" aria-hidden="true"></canvas>
 
-  <!-- hazard strips -->
-  <div class="warning-strip" aria-hidden="true"></div>
-  <div class="warning-strip warning-strip-bottom" aria-hidden="true"></div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  FIREBASE LOADING OVERLAY                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/95 backdrop-blur-xl">
+  <div class="text-center">
+    <div class="mb-4 text-5xl">🔥</div>
+    <div class="font-orbitron text-xl text-cyan-400 mb-3">Bağlanıyor...</div>
+    <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
+    <p class="text-slate-500 text-sm mt-4">Firebase ile bağlantı kuruluyor</p>
+  </div>
+</div>
 
-  <!-- ===================================================
-       MAIN CONTENT
-  =================================================== -->
-  <main class="wrapper">
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  FIREBASE ERROR BANNER                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="fbErrorBanner" class="hidden fixed top-0 inset-x-0 z-[150] px-4 py-3 bg-red-900/80 border-b border-red-500/40 backdrop-blur-sm text-center text-sm">
+  <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
+  <span class="text-red-300">Firebase bağlantısı kurulamadı — <strong>firebase-config.js</strong> dosyasındaki ayarları kontrol et.</span>
+  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Kapat</button>
+</div>
 
-    <!-- STATUS BAR -->
-    <div class="status-bar">
-      <span><span class="led"></span><span class="tag">SYSTEM OFFLINE</span></span>
-      <span class="status-time" id="live-clock">--:--:--</span>
-      <span style="color:var(--muted);font-size:10px;">v3.0.0-maintenance</span>
-    </div>
-
-    <!-- LOGO -->
-    <div class="logo-area">
-      <span class="logo-icon">⚖️</span>
-      <h1 class="logo-title glitch" data-text="Guthaben-Schulden-Spiel Pro">
-        Guthaben-Schulden-Spiel Pro
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  AUTH OVERLAY (Login / Signup)                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="authOverlay" class="hidden fixed inset-0 z-[100] items-center justify-center bg-game-bg/98 backdrop-blur-2xl px-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">⚖️</div>
+      <h1 class="font-orbitron text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-1">
+        Guthaben-Schulden
       </h1>
-      <p class="logo-sub">Interaktives Lernspiel — Positive & Negative Zahlen</p>
+      <p class="text-slate-400 text-sm">Pro Edition · Firebase</p>
     </div>
 
-    <!-- MAINTENANCE BADGE -->
-    <div class="maintenance-badge">
-      <div class="badge-inner">
-        🚧&nbsp; Planmäßige Systemwartung &nbsp;🚧
+    <!-- LOGIN PANEL -->
+    <div id="loginPanel" class="glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Giriş Yap</h2>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginUsername" type="text" required placeholder="kullanici_adi"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginPassword" type="password" required placeholder="••••••••"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="loginBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
+        </button>
+      </form>
+      <div class="mt-6 text-center space-y-3">
+        <p class="text-slate-500 text-sm">Hesabın yok mu?
+          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Kayıt Ol</button>
+        </p>
+        <button id="guestPlayBtn" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
+          <i class="fas fa-ghost mr-1"></i>Kayıt olmadan devam et (çevrimdışı)
+        </button>
       </div>
     </div>
 
-    <!-- ======== FIRST APOLOGY CARD ======== -->
-    <div class="apology-card">
-      <h2>🙇 Wir entschuldigen uns aufrichtig</h2>
-      <p>
-        Liebe Schülerinnen und Schüler, liebe Lehrerinnen und Lehrer, liebe Eltern und alle
-        treuen Nutzer von <span class="highlight">Guthaben-Schulden-Spiel Pro</span> —
-        wir möchten Ihnen mitteilen, dass unser System derzeit
-        <span class="highlight">vollständig offline</span> ist.
-      </p>
-      <p>
-        Wir verstehen, wie wichtig dieses Lernwerkzeug für Ihren täglichen Unterricht und für
-        das Üben von positiven und negativen Zahlen ist. Es tut uns
-        <span class="em">außerordentlich leid</span>, dass wir Ihnen diese Unannehmlichkeit bereiten
-        müssen. Bitte seien Sie versichert: Unser gesamtes Entwicklerteam arbeitet rund um die
-        Uhr daran, das System schnellstmöglich wieder in Betrieb zu nehmen.
-      </p>
-      <p>
-        Der Ausfall wurde durch eine Kombination aus
-        <span class="highlight">kritischen Datenbankmigrationen</span>,
-        <span class="highlight">Firebase-Infrastruktur-Updates</span> und notwendigen
-        <span class="highlight">Sicherheitspatches</span> verursacht. Wir nehmen Datenschutz
-        und Systemstabilität sehr ernst — deshalb haben wir uns dazu entschieden, die Wartung
-        vollständig durchzuführen, anstatt einen halbfertigen Dienst anzubieten.
-      </p>
-      <p>
-        Wir bitten Sie inständig um Ihre <span class="em">Geduld und Ihr Verständnis</span>.
-        Ihr Vertrauen in uns ist uns das Wichtigste. Nochmals: Es tut uns sehr leid. 🙏
-      </p>
+    <!-- SIGNUP PANEL -->
+    <div id="signupPanel" class="hidden glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Kayıt Ol</h2>
+      <form id="signupForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı *</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupUsername" type="text" required placeholder="benzersiz_adin"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre *</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupPassword" type="password" required placeholder="En az 6 karakter"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-posta <span class="text-slate-600">(isteğe bağlı)</span></label>
+          <div class="relative">
+            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupEmail" type="email" placeholder="ornek@email.com"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="signupBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
+        </button>
+      </form>
+      <div class="mt-6 text-center">
+        <p class="text-slate-500 text-sm">Zaten hesabın var mı?
+          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Giriş Yap</button>
+        </p>
+      </div>
     </div>
+  </div>
+</div>
 
-    <!-- ======== COUNTDOWN ======== -->
-    <div class="countdown-section">
-      <p class="countdown-label">⏳ Geschätzte Wiederherstellungszeit</p>
-      <div class="countdown-grid">
-        <div class="countdown-unit">
-          <div class="countdown-number" id="cd-days">--</div>
-          <div class="countdown-name">Tage</div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  CRASH SCREEN                                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="crashScreen" class="fixed inset-0 z-[999] hidden flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
+  <div class="text-center p-8 max-w-md">
+    <div class="text-6xl mb-4">⚠️</div>
+    <h2 class="font-orbitron text-2xl text-red-400 mb-3">Kritischer Fehler</h2>
+    <p id="crashMessage" class="text-slate-300 mb-6">Ein unerwarteter Fehler ist aufgetreten.</p>
+    <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
+      <i class="fas fa-redo mr-2"></i>Neu starten
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  TOAST CONTAINER                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[90] flex flex-col gap-3 pointer-events-none" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  NOTIFICATION PANEL                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="notifPanel" class="hidden fixed top-16 right-4 z-[80] w-80 glass-panel rounded-2xl border border-white/10 p-4 shadow-2xl" style="max-height:420px;overflow-y:auto;">
+  <div id="notificationsContainer"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  INBOX MODAL (message from admin on login)                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="inboxModal" class="hidden fixed inset-0 z-[120] items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+  <div class="relative glass-panel rounded-2xl p-8 max-w-lg w-full border border-cyan-500/20">
+    <button id="closeInboxBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+        <i class="fas fa-envelope text-yellow-400"></i>
+      </div>
+      <div>
+        <div class="font-orbitron text-sm text-yellow-400">Yeni Mesaj</div>
+        <div class="text-xs text-slate-500">Giriş yapınca seni bekleyen bir mesaj var</div>
+      </div>
+    </div>
+    <div class="mb-2 text-xs text-slate-500">Gönderen: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
+    <div class="mb-1 text-xs text-slate-500">Tarih: <span id="inboxMsgDate" class="text-slate-400"></span></div>
+    <h3 id="inboxMsgSubject" class="font-orbitron text-lg text-slate-200 my-3"></h3>
+    <p id="inboxMsgBody" class="text-slate-300 text-sm leading-relaxed mb-5 p-4 bg-white/5 rounded-xl border border-white/5"></p>
+    <div class="flex gap-3">
+      <textarea id="inboxReplyInput" rows="2" placeholder="Yanıtla..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
+      <button id="inboxReplyBtn" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
+        <i class="fas fa-reply mr-1"></i>Gönder
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  PROFILE OVERLAY                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="profileOverlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+  <div class="glass-panel rounded-2xl p-8 max-w-2xl w-full border border-white/10 max-h-[90vh] overflow-y-auto relative">
+    <button id="closeProfileBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
+      <i class="fas fa-user-circle mr-2"></i>Profil
+    </h2>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  ADMIN OVERLAY                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="adminOverlay" class="hidden fixed inset-0 z-[90] items-start justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto">
+  <div class="glass-panel rounded-2xl w-full max-w-5xl border border-yellow-500/20 min-h-[80vh]">
+    <!-- Admin Header -->
+    <div class="flex items-center justify-between p-6 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+          <i class="fas fa-shield-alt text-yellow-400"></i>
         </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-number" id="cd-hours">--</div>
-          <div class="countdown-name">Stunden</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-number" id="cd-mins">--</div>
-          <div class="countdown-name">Minuten</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-unit">
-          <div class="countdown-number" id="cd-secs">--</div>
-          <div class="countdown-name">Sekunden</div>
+        <div>
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin Paneli</h2>
+          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Yönetim</p>
         </div>
       </div>
-      <p class="countdown-note">
-        Geplante Wiederinbetriebnahme: <span class="target-date">24. Februar 2026 — 00:00 Uhr (MEZ)</span>
-      </p>
+      <button id="closeAdminBtn" class="text-slate-400 hover:text-white text-2xl transition-colors">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
 
-    <!-- ======== WORKERS SCENE ======== -->
-    <div class="workers-section">
-      <p class="workers-title">
-        <span class="ping-dot"><span></span><span></span></span>
-        &nbsp; Unser Team arbeitet bereits daran
+    <!-- Admin Tabs -->
+    <div class="flex gap-1 px-6 pt-4 border-b border-white/5 overflow-x-auto scrollbar-thin pb-0">
+      <button class="admin-tab-btn active-admin-tab" data-tab="stats">
+        <i class="fas fa-chart-bar mr-2"></i>İstatistikler
+      </button>
+      <button class="admin-tab-btn" data-tab="users">
+        <i class="fas fa-users mr-2"></i>Kullanıcılar
+      </button>
+      <button class="admin-tab-btn" data-tab="messages">
+        <i class="fas fa-envelope mr-2"></i>Mesajlar
+      </button>
+      <button class="admin-tab-btn" data-tab="devices">
+        <i class="fas fa-laptop mr-2"></i>Cihazlar
+      </button>
+      <button class="admin-tab-btn" data-tab="logs">
+        <i class="fas fa-history mr-2"></i>Loglar
+      </button>
+    </div>
+
+    <!-- Admin Tab Panes -->
+    <div class="p-6">
+      <div class="admin-tab-pane" data-pane="stats" id="admin-pane-stats"></div>
+      <div class="admin-tab-pane hidden" data-pane="users" id="admin-pane-users"></div>
+      <div class="admin-tab-pane hidden" data-pane="messages" id="admin-pane-messages"></div>
+      <div class="admin-tab-pane hidden" data-pane="devices" id="admin-pane-devices"></div>
+      <div class="admin-tab-pane hidden" data-pane="logs" id="admin-pane-logs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Sub-Modal (Edit User) -->
+<div id="adminSubModal" class="hidden fixed inset-0 z-[100] items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+  <div class="glass-panel rounded-2xl p-8 max-w-3xl w-full border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative">
+    <button id="closeSubModal" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <div id="adminSubContent"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  RULES MODAL                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="rulesModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <div class="modal-backdrop absolute inset-0" id="rulesBackdrop"></div>
+  <div class="modal-content glass-panel relative z-10 max-w-3xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
+    <button id="closeRules" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" aria-label="Schließen">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 id="rulesTitle" class="font-orbitron text-3xl font-bold text-cyan-400 mb-2 neon-text">
+      <i class="fas fa-book-open mr-3"></i><span data-i18n="rules_title">Spielregeln</span>
+    </h2>
+    <p class="text-slate-400 mb-8 text-lg" data-i18n="rules_subtitle">Verstehe die Magie hinter positiven und negativen Zahlen.</p>
+
+    <div class="rules-section mb-6 p-6 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+      <h3 class="font-orbitron text-lg font-semibold text-cyan-300 mb-4">
+        <i class="fas fa-lightbulb mr-2 text-yellow-400"></i><span data-i18n="rules_concept">Das Grundprinzip</span>
+      </h3>
+      <p class="text-slate-300 leading-relaxed mb-4" data-i18n="rules_concept_text">
+        Stell dir vor, du hast zwei Arten von Tickets: <span class="text-green-400 font-semibold">Positive Tickets (+1€)</span> und <span class="text-red-400 font-semibold">Negative Tickets (-1€)</span>.
+        Dein Kontostand bestimmt sich durch die Summe aller Tickets, die du besitzt.
       </p>
-      <div class="scene">
-
-        <!-- Flying tools -->
-        <div class="flying-tool">🔩</div>
-        <div class="flying-tool">⚙️</div>
-        <div class="flying-tool">🔑</div>
-
-        <!-- Paint drips -->
-        <div class="paint-drip">🟠</div>
-        <div class="paint-drip">🟡</div>
-        <div class="paint-drip">⚪</div>
-
-        <!-- Sparks -->
-        <div class="sparks">
-          <div class="spark"></div>
-          <div class="spark"></div>
-          <div class="spark"></div>
-          <div class="spark"></div>
-          <div class="spark"></div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div class="scenario-card p-5 rounded-xl border border-green-500/30 bg-green-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
+          <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
         </div>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 3 Positive Tickets"</p>
+        <div class="math-display">+(+3) = <span class="text-green-400">+3</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-red-500/30 bg-red-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
+          <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 4 Negative Tickets"</p>
+        <div class="math-display">+(-4) = <span class="text-red-400">-4</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-orange-500/30 bg-orange-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
+          <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 2 Positive Tickets"</p>
+        <div class="math-display">-(+2) = <span class="text-red-400">-2</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 relative overflow-hidden">
+        <div class="absolute top-2 right-2 text-xs text-purple-300 bg-purple-500/20 px-2 py-1 rounded-full">✨ Magie!</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
+          <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 5 Negative Tickets"</p>
+        <div class="math-display">-(-5) = <span class="text-green-400">+5</span></div>
+      </div>
+    </div>
+    <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-6">
+      <h3 class="font-orbitron text-base font-semibold text-purple-300 mb-3">
+        <i class="fas fa-infinity mr-2"></i>Die Mathematische Regel
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-center">
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">+(+) = +</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-red-400 text-lg font-bold">+(-) = -</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-red-400 text-lg font-bold">-(+) = -</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">-(-) = +</div></div>
+      </div>
+    </div>
+    <button id="closeRulesBtn" class="mt-4 w-full btn-primary py-4 rounded-xl font-orbitron text-lg font-semibold">
+      <i class="fas fa-play mr-2"></i><span data-i18n="start_game">Spiel starten!</span>
+    </button>
+  </div>
+</div>
 
-        <!-- Smoke puffs -->
-        <div class="smoke-puff"></div>
-        <div class="smoke-puff"></div>
-        <div class="smoke-puff"></div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  TEACHER MODAL                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="teacherModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+  <div class="modal-backdrop absolute inset-0" id="teacherBackdrop"></div>
+  <div class="modal-content glass-panel relative z-10 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
+    <button id="closeTeacher" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 class="font-orbitron text-2xl font-bold text-yellow-400 mb-6">🎓 Lehrermodus</h2>
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Min. Zahl</label>
+        <input type="number" id="teacherMin" value="1" min="1" max="50" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Max. Zahl</label>
+        <input type="number" id="teacherMax" value="10" min="1" max="100" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-xs text-slate-400 mb-2">Timer</label>
+      <div class="flex items-center gap-3">
+        <input type="range" id="teacherTimer" min="0" max="120" value="0" step="5" class="flex-1 accent-yellow-400" />
+        <span id="teacherTimerDisplay" class="font-orbitron text-yellow-400 w-20 text-center">Aus</span>
+      </div>
+    </div>
+    <div class="mb-4 flex items-center gap-3">
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="teacherCheatSheet" class="sr-only" />
+        <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-yellow-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+        <span class="ml-3 text-sm text-slate-300">Spickzettel (Antwort anzeigen)</span>
+      </label>
+    </div>
+    <div id="cheatSheetPanel" class="mt-4 hidden"></div>
+    <div class="mb-4">
+      <label class="block text-xs text-slate-400 mb-1">Level fixieren</label>
+      <select id="teacherLevel" class="game-input w-full px-3 py-2 rounded-lg font-mono">
+        <option value="-1">Auto (nach Streak)</option>
+        <option value="0">Anfänger (1–5)</option>
+        <option value="1">Einsteiger (1–10)</option>
+        <option value="2">Fortgeschritten (1–20)</option>
+        <option value="3">Profi (1–50)</option>
+        <option value="4">Experte (1–100)</option>
+      </select>
+    </div>
+    <button id="applyTeacher" class="w-full py-3 rounded-xl font-orbitron text-sm font-bold bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 transition-all">
+      <i class="fas fa-check mr-2"></i>Anwenden & Spielen
+    </button>
+  </div>
+</div>
 
-        <!-- Crack -->
-        <div class="crack crack-1">💥</div>
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  APP WRAPPER (shown after login)                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="appWrapper" class="hidden relative z-10 min-h-screen flex flex-col">
 
-        <!-- Worker 1 — Hammer -->
-        <div class="worker w1">
-          <div class="worker-body">
-            <div class="head"></div>
-            <div class="torso">
-              <div class="arm-right"></div>
-              <div class="arm-left"></div>
+  <!-- ─── HEADER ───────────────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-40 px-4 py-3 border-b border-white/5 backdrop-blur-xl bg-game-bg/80">
+    <div class="max-w-6xl mx-auto flex items-center gap-3 flex-wrap">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span class="text-2xl">⚖️</span>
+        <div class="hidden sm:block">
+          <div class="font-orbitron text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 leading-none">Guthaben</div>
+          <div class="font-orbitron text-xs text-slate-500 leading-none">Schulden · Pro</div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="flex-1"></div>
+
+      <!-- Streak & Score -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
+          <span id="streakFlame" class="streak-flame text-xl" aria-hidden="true">🔥</span>
+          <div id="streakCount" class="font-orbitron text-lg font-bold text-orange-400">0</div>
+        </div>
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
+          <i class="fas fa-star text-yellow-400 text-xs"></i>
+          <div id="highScore" class="font-orbitron text-lg font-bold text-yellow-400">0</div>
+        </div>
+      </div>
+
+      <!-- Audio / Rules -->
+      <div class="flex items-center gap-2">
+        <button id="audioToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" title="Audio ein/aus">
+          <i class="fas fa-volume-up text-cyan-400" id="audioIcon"></i>
+        </button>
+        <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" aria-label="Spielregeln">
+          <i class="fas fa-book text-slate-400"></i>
+        </button>
+        <button id="langToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400">TR/DE</button>
+        <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden">
+          <i class="fas fa-chalkboard-teacher text-yellow-400"></i>
+        </button>
+      </div>
+
+      <!-- User Area -->
+      <div id="headerUserArea" class="flex items-center gap-2"></div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN TABS ─────────────────────────────────────────────────────────── -->
+  <nav class="px-4 pt-4 pb-0 border-b border-white/5">
+    <div class="max-w-6xl mx-auto flex gap-1 overflow-x-auto scrollbar-thin">
+      <button class="main-tab-btn active-tab" data-tab="game">
+        <i class="fas fa-gamepad mr-2"></i>Spiel
+      </button>
+      <button class="main-tab-btn" data-tab="stats">
+        <i class="fas fa-chart-line mr-2"></i>İstatistikler
+      </button>
+      <button class="main-tab-btn" data-tab="tickets">
+        <i class="fas fa-ticket-alt mr-2"></i>Tickets
+      </button>
+      <button class="main-tab-btn" data-tab="leaderboard">
+        <i class="fas fa-trophy mr-2"></i>Sıralama
+      </button>
+      <button class="main-tab-btn" data-tab="friends">
+        <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────────────────── -->
+  <main class="flex-1 px-4 py-6">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- ── LEVEL / SCORE HEADER ── -->
+      <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <div class="text-slate-400 text-xs uppercase tracking-widest">Level</div>
+              <span id="levelDisplay" class="font-orbitron text-lg font-black text-cyan-400">1</span>
             </div>
-            <div class="legs">
-              <div class="leg"></div>
-              <div class="leg"></div>
+            <div>
+              <div class="font-semibold text-slate-200 text-sm" id="levelName">Anfänger</div>
+              <div class="text-slate-500 text-xs" id="levelRange">Zahlen: 1–5</div>
+            </div>
+          </div>
+          <div id="timerDisplay" class="hidden font-orbitron text-xl font-bold text-yellow-400">
+            <i class="fas fa-clock mr-2 text-sm"></i><span id="timerValue">--</span>s
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Puan</div>
+            <div id="scoreDisplay" class="font-orbitron text-xl font-bold text-cyan-400">0</div>
+          </div>
+        </div>
+        <div class="mt-3 relative h-2 bg-white/5 rounded-full overflow-hidden">
+          <div id="progressBar" class="progress-fill h-full rounded-full w-0 transition-all duration-700"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-slate-600 text-xs" id="progressLabel">0 / 5 bis Level 2</span>
+          <span class="text-slate-600 text-xs" id="progressPct">0%</span>
+        </div>
+      </div>
+
+      <!-- ══ GAME TAB ══════════════════════════════════════════════════════════ -->
+      <div id="tab-game" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- Player Card -->
+          <div class="glass-panel rounded-2xl p-5 border-cyan-500/20 relative overflow-hidden player-card" id="userCard">
+            <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="you">DU</div>
+            <div id="userBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-cyan-400" aria-live="polite">0</div>
+            <div id="userTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-cyan-400 font-semibold hidden">
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i>DEIN ZUG
+            </div>
+          </div>
+          <!-- Computer Card -->
+          <div class="glass-panel rounded-2xl p-5 border-purple-500/20 relative overflow-hidden" id="computerCard">
+            <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="computer">COMPUTER</div>
+            <div id="computerBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-purple-400" aria-live="polite">0</div>
+            <div id="computerTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-purple-400 font-semibold hidden">
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i>COMPUTER ZUG
             </div>
           </div>
         </div>
 
-        <!-- Worker 2 — Wrench -->
-        <div class="worker w2">
-          <div class="worker-body">
-            <div class="head"></div>
-            <div class="torso">
-              <div class="arm-right"></div>
-            </div>
-            <div class="legs">
-              <div class="leg"></div>
-              <div class="leg"></div>
-            </div>
+        <!-- Task Card -->
+        <div class="glass-panel rounded-2xl p-6 border border-white/5 relative overflow-hidden mb-6" id="taskCard">
+          <div class="flex items-center gap-3 mb-5">
+            <div id="turnBadge" class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-i18n="your_turn_badge">DEIN ZUG</div>
           </div>
-        </div>
 
-        <!-- Worker 3 — Dev -->
-        <div class="worker w3">
-          <div class="worker-body">
-            <div class="head"></div>
-            <div class="torso"></div>
-            <div class="legs">
-              <div class="leg"></div>
-              <div class="leg"></div>
-            </div>
+          <div id="instructionDisplay" class="instruction-display text-center py-6 rounded-xl mb-5 relative overflow-hidden">
+            <div id="actionWord" class="font-orbitron text-3xl md:text-4xl font-black text-cyan-400 mb-2">–</div>
+            <div id="amountDisplay" class="font-orbitron text-5xl md:text-6xl font-black text-white my-2">–</div>
+            <div id="itemWord" class="font-orbitron text-xl md:text-2xl font-semibold text-slate-300">–</div>
+            <div id="ticketVisual" class="flex justify-center gap-2 mt-4 flex-wrap min-h-[2.5rem]"></div>
           </div>
-          <div class="w3-desk"></div>
-        </div>
 
-        <!-- Worker 4 — Electrician -->
-        <div class="worker w4">
-          <div class="worker-body">
-            <div class="head"></div>
-            <div class="torso">
-              <div class="arm-right"></div>
-            </div>
-            <div class="legs">
-              <div class="leg"></div>
-              <div class="leg"></div>
-            </div>
+          <div id="cheatOverlay" class="hidden mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-center">
+            <span class="text-yellow-400 text-xs mr-2">Antwort:</span>
+            <span id="cheatAnswer" class="text-yellow-400 font-mono font-bold text-sm"></span>
           </div>
-        </div>
 
-        <!-- Worker 5 — Painter -->
-        <div class="worker w5">
-          <div class="worker-body">
-            <div class="head"></div>
-            <div class="torso">
-              <div class="arm-right"></div>
+          <!-- Input Area -->
+          <div id="inputArea" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="your_expression">DEIN AUSDRUCK</label>
+                <input type="text" id="expressionInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. -(-5)" autocomplete="off" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="new_balance">NEUER STAND</label>
+                <input type="number" id="balanceInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. 5" />
+              </div>
             </div>
-            <div class="legs">
-              <div class="leg"></div>
-              <div class="leg"></div>
+            <button id="checkBtn" class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group" aria-label="Antwort prüfen">
+              <span class="relative z-10" data-i18n="check">PRÜFEN</span>
+            </button>
+          </div>
+
+          <!-- Computer Thinking -->
+          <div id="computerThinking" class="hidden text-center py-8">
+            <div class="inline-flex items-center gap-3 text-purple-400">
+              <div class="thinking-dots flex gap-2">
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:0ms"></div>
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:150ms"></div>
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:300ms"></div>
+              </div>
+              <span class="font-orbitron text-sm" data-i18n="computer_thinking">COMPUTER DENKT</span>
             </div>
           </div>
-        </div>
 
-      </div><!-- /.scene -->
-    </div><!-- /.workers-section -->
-
-    <!-- ======== TASK PROGRESS ======== -->
-    <div class="task-section">
-      <h3>⚙️ Laufende Wartungsarbeiten</h3>
-
-      <div class="task-item">
-        <span class="task-icon">🗄️</span>
-        <div class="task-info">
-          <div class="task-name">Firebase Realtime Database — Schemamigration</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill amber" style="width: 78%;"></div>
+          <!-- Feedback -->
+          <div id="feedbackArea" class="feedback-area rounded-2xl p-5 hidden mt-4" role="alert" aria-live="assertive">
+            <div class="flex items-start gap-4">
+              <div id="feedbackIcon" class="text-3xl flex-shrink-0"></div>
+              <div>
+                <h3 id="feedbackTitle" class="font-orbitron text-lg font-bold mb-1"></h3>
+                <p id="feedbackMessage" class="text-slate-300 leading-relaxed"></p>
+              </div>
+            </div>
           </div>
         </div>
-        <span class="task-status running">78% — läuft</span>
-      </div>
 
-      <div class="task-item">
-        <span class="task-icon">🔐</span>
-        <div class="task-info">
-          <div class="task-name">Sicherheitsregeln & Authentifizierung — Update</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill green" style="width: 100%;"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Game Log -->
+          <div class="glass-panel rounded-2xl p-5 border border-white/5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="game_log">Spiellog</h3>
+            </div>
+            <div id="gameLog" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin" aria-live="polite"></div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="glass-panel rounded-2xl p-5 border border-white/5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="achievements">Erfolge</h3>
+            </div>
+            <div id="achievementsGrid" class="grid grid-cols-3 gap-2"></div>
           </div>
         </div>
-        <span class="task-status done">✓ Fertig</span>
+
+        <!-- New Game Button -->
+        <div class="mt-6">
+          <button id="newGameBtn" class="w-full btn-secondary py-3 rounded-xl font-orbitron text-sm font-bold tracking-wider">
+            <i class="fas fa-redo mr-2"></i><span data-i18n="new_game">Neues Spiel</span>
+          </button>
+        </div>
       </div>
 
-      <div class="task-item">
-        <span class="task-icon">📊</span>
-        <div class="task-info">
-          <div class="task-name">Leaderboard & Statistik-Engine — Neuaufbau</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill amber" style="width: 55%;"></div>
+      <!-- ══ STATS TAB ═════════════════════════════════════════════════════════ -->
+      <div id="tab-stats" class="tab-content hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statTotalCorrect" class="font-orbitron text-4xl font-black text-cyan-400">0</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="total_correct">Richtig</div>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statAccuracy" class="font-orbitron text-4xl font-black text-green-400">0%</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="accuracy">Genauigkeit</div>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statMaxStreak" class="font-orbitron text-4xl font-black text-orange-400">0</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststeak</div>
           </div>
         </div>
-        <span class="task-status running">55% — läuft</span>
-      </div>
-
-      <div class="task-item">
-        <span class="task-icon">⚡</span>
-        <div class="task-info">
-          <div class="task-name">Service Worker & PWA Cache — Invalidierung</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill cyan" style="width: 90%;"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="glass-panel rounded-2xl p-6 border border-white/5">
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="accuracy_chart">Genauigkeit</h3>
+            <canvas id="accuracyChart"></canvas>
+          </div>
+          <div class="glass-panel rounded-2xl p-6 border border-white/5">
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="operations_chart">Operationen</h3>
+            <canvas id="opsChart"></canvas>
           </div>
         </div>
-        <span class="task-status running">90% — läuft</span>
+        <div class="glass-panel rounded-2xl p-6 border border-white/5 mb-6">
+          <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="heatmap_title">Aktivitätsheatmap</h3>
+          <div id="heatmapGrid" class="grid gap-3" style="grid-template-columns: repeat(4, 1fr)"></div>
+        </div>
+        <div class="text-center">
+          <button id="resetStats" class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
+            <i class="fas fa-trash mr-2"></i>İstatistikleri Sıfırla
+          </button>
+        </div>
       </div>
 
-      <div class="task-item">
-        <span class="task-icon">🌐</span>
-        <div class="task-info">
-          <div class="task-name">Mehrsprachigkeit (DE/TR) — Übersetzungs-Patch</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill green" style="width: 100%;"></div>
+      <!-- ══ TICKETS TAB ════════════════════════════════════════════════════════ -->
+      <div id="tab-tickets" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-8">
+          <h2 class="font-orbitron text-xl font-bold text-center text-slate-200 mb-2" data-i18n="ticket_stack_title">Visueller Ticket-Stack</h2>
+          <p class="text-slate-400 text-sm text-center mb-8" data-i18n="ticket_stack_desc">Beobachte, wie Tickets in dein Konto fließen oder abgehen.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div>
+              <div class="text-center mb-4">
+                <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-2" data-i18n="your_stack">Dein Ticket-Stack</div>
+                <div id="stackBalance" class="font-orbitron text-5xl font-black text-cyan-400 mb-4">0</div>
+              </div>
+              <div id="ticketStackArea" class="relative min-h-48 bg-white/3 rounded-2xl border border-white/10 overflow-hidden flex flex-wrap content-end gap-1 p-3">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="stackEmptyMsg">
+                  <span class="text-slate-600 text-sm font-orbitron" data-i18n="stack_empty">Noch keine Tickets</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4 text-center" data-i18n="simulate">Simulation</div>
+              <div class="space-y-4">
+                <div class="glass-panel rounded-xl p-4">
+                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2" data-i18n="last_op">Letzte Operation</div>
+                  <div id="lastOpDisplay" class="font-mono text-2xl text-center text-slate-300">—</div>
+                </div>
+                <div class="glass-panel rounded-xl p-4">
+                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2">Legende</div>
+                  <div class="flex gap-4 justify-center">
+                    <div class="flex items-center gap-2">
+                      <div class="w-5 h-5 rounded bg-green-500/40 border border-green-500/60 flex items-center justify-center text-xs text-green-400 font-bold">+</div>
+                      <span class="text-slate-400 text-xs">Positive Tickets</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="w-5 h-5 rounded bg-red-500/40 border border-red-500/60 flex items-center justify-center text-xs text-red-400 font-bold">−</div>
+                      <span class="text-slate-400 text-xs">Negative Tickets</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="svgAnimationArea" class="relative h-32 rounded-xl bg-white/3 border border-white/10 overflow-hidden">
+                  <svg id="ticketFlightSVG" class="absolute inset-0 w-full h-full" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <span class="task-status done">✓ Fertig</span>
       </div>
 
-      <div class="task-item">
-        <span class="task-icon">🎮</span>
-        <div class="task-info">
-          <div class="task-name">Spiellogik v3.1 — Streaks, Achievements, KI-Gegner</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill amber" style="width: 40%;"></div>
-          </div>
-        </div>
-        <span class="task-status running">40% — läuft</span>
-      </div>
-
-      <div class="task-item">
-        <span class="task-icon">🖥️</span>
-        <div class="task-info">
-          <div class="task-name">Admin-Panel — Audit & Zugriffskontrolle</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill red" style="width: 25%;"></div>
-          </div>
-        </div>
-        <span class="task-status running">25% — läuft</span>
-      </div>
-
-      <div class="task-item">
-        <span class="task-icon">🔊</span>
-        <div class="task-info">
-          <div class="task-name">Web Audio API — Soundsynthese-Optimierung</div>
-          <div class="task-bar-bg">
-            <div class="task-bar-fill green" style="width: 100%;"></div>
-          </div>
-        </div>
-        <span class="task-status done">✓ Fertig</span>
-      </div>
-
-    </div>
-
-    <!-- ======== TERMINAL LOG ======== -->
-    <div class="terminal">
-      <div class="terminal-header">
-        <div class="terminal-dot"></div>
-        <div class="terminal-dot"></div>
-        <div class="terminal-dot"></div>
-        <span class="terminal-title">maintenance-log — systemd-journal</span>
-      </div>
-
-      <div class="log-line"><span class="ts">23.02 22:14:01</span><span class="lvl err">[ERR]</span><span class="msg">firebase: connection refused — <span class="val">ECONNRESET</span></span></div>
-      <div class="log-line"><span class="ts">23.02 22:14:03</span><span class="lvl warn">[WRN]</span><span class="msg">auth-service: fallback aktiviert — kein Datenbankzugriff</span></div>
-      <div class="log-line"><span class="ts">23.02 22:14:07</span><span class="lvl info">[INF]</span><span class="msg">maintenance-mode: <span class="val">ENABLED</span> — Nutzer werden weitergeleitet</span></div>
-      <div class="log-line"><span class="ts">23.02 22:14:09</span><span class="lvl info">[INF]</span><span class="msg">migration-agent: gestartet — Zieldatenbank <span class="val">gss-pro-v3</span></span></div>
-      <div class="log-line"><span class="ts">23.02 22:18:44</span><span class="lvl warn">[WRN]</span><span class="msg">migration: 14 280 Datensätze erkannt — geschätzte Zeit <span class="val">~4h</span></span></div>
-      <div class="log-line"><span class="ts">23.02 22:31:12</span><span class="lvl info">[INF]</span><span class="msg">security-rules: neugeschrieben — Rollout ausstehend</span></div>
-      <div class="log-line"><span class="ts">23.02 23:05:57</span><span class="lvl info">[INF]</span><span class="msg">sw-cache: invalidiert — version <span class="val">3.1.0-build.47</span></span></div>
-      <div class="log-line"><span class="ts">23.02 23:28:18</span><span class="lvl ok">[OK ]</span><span class="msg">auth-module: Patch eingespielt — keine bekannten CVEs</span></div>
-      <div class="log-line"><span class="ts">23.02 23:41:00</span><span class="lvl warn">[WRN]</span><span class="msg">db-migration: 78 % — langsamer als erwartet, ETA adjustiert</span></div>
-      <div class="log-line"><span class="ts">24.02 00:00:00</span><span class="lvl info">[INF]</span><span class="msg">system: Neustart geplant — Go-Live <span class="val">00:00 MEZ</span>&nbsp;<span class="cursor-blink"></span></span></div>
-
-    </div>
-
-    <!-- ======== GRAND APOLOGY ======== -->
-    <div class="big-sorry">
-      <span class="sorry-emoji">😔</span>
-      <h2>Wir entschuldigen uns von Herzen</h2>
-      <p>
-        Es tut uns zutiefst leid, dass wir den Dienst unterbrechen mussten. Wir wissen, dass
-        viele Schulklassen täglich auf unser Spiel angewiesen sind, und diese Unterbrechung
-        ist für Sie äußerst unangenehm.
-      </p>
-      <p>
-        Bitte glauben Sie uns: Diese Wartung war absolut notwendig, um Ihnen in Zukunft einen
-        noch zuverlässigeren und sichereren Service anbieten zu können. Nach dem Neustart
-        werden Sie eine deutlich verbesserte Performance, neue Achievements und eine
-        stabilere Firebase-Anbindung vorfinden.
-      </p>
-      <p>
-        Wir schätzen jeden einzelnen unserer Nutzer — ob Schüler, Lehrer oder Elternteil.
-        Ihr Vertrauen ist unser größtes Gut. <strong style="color:var(--amber)">Herzlichen Dank
-        für Ihre Geduld.</strong> 🙏🙏🙏
-      </p>
-    </div>
-
-    <!-- ======== INFO GRID ======== -->
-    <div class="info-grid">
-      <div class="info-card">
-        <span class="ic-icon">❓</span>
-        <div class="ic-title">Warum ist das System ausgefallen?</div>
-        <div class="ic-body">
-          Eine geplante Datenbankmigration und kritische Sicherheits-Updates machen einen
-          vollständigen Neustart erforderlich. Alle Benutzerdaten sind sicher und werden
-          nicht verloren gehen.
+      <!-- ══ LEADERBOARD TAB ═══════════════════════════════════════════════════ -->
+      <div id="tab-leaderboard" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-white/5">
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
+            <i class="fas fa-trophy mr-2"></i>Sıralama Tablosu
+          </h2>
+          <div id="leaderboardContent"></div>
         </div>
       </div>
 
-      <div class="info-card cyan-accent">
-        <span class="ic-icon">💾</span>
-        <div class="ic-title">Sind meine Daten sicher?</div>
-        <div class="ic-body">
-          Ja, absolut. Alle Spielstände, Streaks, Errungenschaften und Nutzerdaten sind
-          vollständig gespeichert und werden nach der Wartung unverändert verfügbar sein.
-        </div>
-      </div>
-
-      <div class="info-card green-accent">
-        <span class="ic-icon">🚀</span>
-        <div class="ic-title">Was wird nach der Wartung besser?</div>
-        <div class="ic-body">
-          Version 3.1 bringt schnellere Ladezeiten, stabileren Offline-Modus, erweiterte
-          Lehrer-Funktionen, neue Aufgabentypen und eine deutlich verbesserte
-          KI-Gegner-Intelligenz.
-        </div>
-      </div>
-
-      <div class="info-card">
-        <span class="ic-icon">📱</span>
-        <div class="ic-title">PWA — Offline-Modus</div>
-        <div class="ic-body">
-          Nach dem Neustart steht ein neuer Service Worker bereit. Der Offline-Modus
-          wird noch zuverlässiger funktionieren. Bitte löschen Sie nach dem Neustart
-          einmalig Ihren Browser-Cache.
-        </div>
-      </div>
-
-      <div class="info-card cyan-accent">
-        <span class="ic-icon">👩‍🏫</span>
-        <div class="ic-title">Lehrermodus</div>
-        <div class="ic-body">
-          Der Lehrermodus (Timer, Level-Sperrung, Spickzettel-Blocker) wird nach der
-          Wartung vollständig verfügbar sein. Neue Klassenmanagement-Features
-          werden ebenfalls eingeführt.
-        </div>
-      </div>
-
-      <div class="info-card green-accent">
-        <span class="ic-icon">📧</span>
-        <div class="ic-title">Kontakt & Support</div>
-        <div class="ic-body">
-          Falls Sie Fragen haben, wenden Sie sich bitte per E-Mail an unser Support-Team.
-          Wir antworten so schnell wie möglich, auch während der Wartungsphase.
-        </div>
-      </div>
-    </div>
-
-    <!-- ======== TIMELINE ======== -->
-    <div class="timeline-section">
-      <h3>📅 Wartungs-Zeitplan</h3>
-
-      <div class="tl-item">
-        <div class="tl-dot done">✓</div>
-        <div class="tl-content">
-          <div class="tl-time">23.02.2026 — 22:00 Uhr</div>
-          <div class="tl-title">Wartungsmodus aktiviert</div>
-          <div class="tl-desc">Das System wurde planmäßig in den Wartungsmodus versetzt.
-            Alle Nutzer wurden abgemeldet und eine Wartungsseite wurde aktiviert.</div>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-dot done">✓</div>
-        <div class="tl-content">
-          <div class="tl-time">23.02.2026 — 22:15 Uhr</div>
-          <div class="tl-title">Datensicherung abgeschlossen</div>
-          <div class="tl-desc">Vollständiges Backup aller Firebase-Daten erstellt.
-            14.280 Benutzerprofile, Spielstände und Leaderboard-Einträge gesichert.</div>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-dot done">✓</div>
-        <div class="tl-content">
-          <div class="tl-time">23.02.2026 — 22:30 Uhr</div>
-          <div class="tl-title">Sicherheits-Patches eingespielt</div>
-          <div class="tl-desc">Alle bekannten Sicherheitslücken wurden geschlossen.
-            Authentifizierungs-Modul auf die neueste Version aktualisiert.</div>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-dot active">◉</div>
-        <div class="tl-content">
-          <div class="tl-time">23.02.2026 — 23:00 Uhr — LAUFEND</div>
-          <div class="tl-title">Datenbankmigration (v2 → v3)</div>
-          <div class="tl-desc">Das Datenbankschema wird auf das neue Format migriert.
-            Dieser Schritt dauert am längsten und läuft derzeit zu 78 % durch.</div>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-dot pending">○</div>
-        <div class="tl-content">
-          <div class="tl-time">23.02.2026 — 23:30 Uhr — Ausstehend</div>
-          <div class="tl-title">Spiellogik v3.1 & neue Features deployen</div>
-          <div class="tl-desc">Neue Achievements, verbesserte KI-Gegner, erweiterte
-            Lehrer-Funktionen und neue Aufgabentypen werden eingespielt.</div>
-        </div>
-      </div>
-
-      <div class="tl-item">
-        <div class="tl-dot pending">○</div>
-        <div class="tl-content">
-          <div class="tl-time">24.02.2026 — 00:00 Uhr — Ziel</div>
-          <div class="tl-title">🚀 System-Neustart & Go-Live</div>
-          <div class="tl-desc">Das System wird neu gestartet, alle Tests durchgeführt
-            und für alle Nutzer freigegeben. Willkommen zurück!</div>
+      <!-- ══ FRIENDS TAB ════════════════════════════════════════════════════════ -->
+      <div id="tab-friends" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-white/5">
+          <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
+            <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
+          </h2>
+          <div id="friendsContent"></div>
         </div>
       </div>
 
     </div>
-
-    <!-- ======== NOTIFY SECTION ======== -->
-    <div class="notify-section">
-      <h3>🔔 Benachrichtigung erhalten</h3>
-      <p>Tragen Sie Ihre E-Mail-Adresse ein und wir benachrichtigen Sie sofort,
-        wenn das System wieder online ist.</p>
-      <div class="notify-form">
-        <input
-          type="email"
-          class="notify-input"
-          id="notify-email"
-          placeholder="ihre@email.de"
-          autocomplete="email"
-        />
-        <button class="notify-btn" onclick="handleNotify()">Benachrichtigen</button>
-      </div>
-      <p class="notify-success" id="notify-success">
-        ✅ Vielen Dank! Wir benachrichtigen Sie sobald das System wieder läuft.
-      </p>
-    </div>
-
-    <!-- ======== EXTRA APOLOGY ======== -->
-    <div class="apology-card" style="margin-bottom:32px; border-color: rgba(0,229,255,0.15);">
-      <h2 style="color:var(--cyan);">💬 Eine persönliche Nachricht unseres Teams</h2>
-      <p>
-        Wir wissen, dass diese Ausfallzeit für Sie eine echte Belastung sein kann — besonders
-        wenn Unterrichtstunden geplant waren oder Schüler auf ihre Streak-Serie und
-        Errungenschaften zugreifen wollten. Dafür entschuldigen wir uns noch einmal
-        <span class="highlight">von ganzem Herzen</span>.
-      </p>
-      <p>
-        Unser Team — bestehend aus Entwicklern, Datenbankadministratoren und
-        Pädagogik-Experten — gibt alles, um diesen Neustart pünktlich und reibungslos
-        zu gestalten. Jeder einzelne von uns arbeitet heute Nacht durch,
-        damit Sie morgen früh wieder ungehindert lernen und spielen können.
-      </p>
-      <p>
-        <span class="em">„Ein kurzer Stopp für die Wartung bedeutet einen großen Sprung
-        nach vorne für das Lernerlebnis."</span> — Das ist unser Versprechen an Sie.
-      </p>
-      <p>
-        Wir danken Ihnen von Herzen für Ihr Vertrauen und Ihre außerordentliche Geduld.
-        Das <span class="highlight">Guthaben-Schulden-Spiel-Pro-Team</span> freut sich
-        darauf, Sie morgen mit einem verbesserten System zu begrüßen. 🎉
-      </p>
-    </div>
-
-    <!-- FOOTER -->
-    <footer class="footer">
-      <p>© 2026 Guthaben-Schulden-Spiel Pro &nbsp;·&nbsp; Alle Rechte vorbehalten</p>
-      <p style="margin-top:6px;">Wir entschuldigen uns für die Unannehmlichkeiten. Danke für Ihre Geduld. 🙏</p>
-      <span class="version">v3.0.0 → v3.1.0 · Wartungsfenster 23–24.02.2026</span>
-    </footer>
-
   </main>
 
-  <!-- ===================================================
-       JAVASCRIPT
-  =================================================== -->
-  <script>
-    /* -------------------------------------------------------
-       LIVE CLOCK
-    ------------------------------------------------------- */
-    function updateClock() {
-      const now = new Date();
-      const pad = n => String(n).padStart(2, '0');
-      document.getElementById('live-clock').textContent =
-        pad(now.getHours()) + ':' +
-        pad(now.getMinutes()) + ':' +
-        pad(now.getSeconds());
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
+  <!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
+  <footer class="py-6 px-4 border-t border-white/5">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2025</p>
+      <a href="https://github.com/Higer" target="_blank" rel="noopener noreferrer" class="maker-signature-glass group">
+        <div class="maker-glass-inner">
+          <span class="text-slate-400 text-sm">Made with</span>
+          <i class="fas fa-heart text-red-500 text-sm animate-pulse mx-1"></i>
+          <span class="text-slate-400 text-sm">by</span>
+          <span class="font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mx-1 maker-name">Higer</span>
+          <i class="fab fa-github text-slate-400 group-hover:text-white transition-colors text-base"></i>
+        </div>
+      </a>
+      <p class="text-slate-700 text-xs">Firebase Edition ✦</p>
+    </div>
+  </footer>
+</div>
 
-    /* -------------------------------------------------------
-       COUNTDOWN
-    ------------------------------------------------------- */
-    const TARGET = new Date('2026-02-24T00:00:00+01:00'); // 24.02.2026 00:00 MEZ
-    const cdDays  = document.getElementById('cd-days');
-    const cdHours = document.getElementById('cd-hours');
-    const cdMins  = document.getElementById('cd-mins');
-    const cdSecs  = document.getElementById('cd-secs');
-    let prevSecs = -1;
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  SCRIPTS                                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<script type="module" src="js/app.js"></script>
 
-    function pad(n) { return String(n).padStart(2, '0'); }
-
-    function tick(el, val) {
-      const formatted = pad(val);
-      if (el.textContent !== formatted) {
-        el.textContent = formatted;
-        el.classList.remove('tick');
-        void el.offsetWidth; // reflow
-        el.classList.add('tick');
-      }
-    }
-
-    function updateCountdown() {
-      const now  = new Date();
-      const diff = TARGET - now;
-
-      if (diff <= 0) {
-        cdDays.textContent = cdHours.textContent = cdMins.textContent = cdSecs.textContent = '00';
-        document.querySelector('.countdown-note').innerHTML =
-          '<span style="color:var(--green);font-weight:700;">✅ Das System sollte jetzt wieder online sein! Bitte laden Sie die Seite neu.</span>';
-        return;
-      }
-
-      const days  = Math.floor(diff / 86400000);
-      const hours = Math.floor((diff % 86400000) / 3600000);
-      const mins  = Math.floor((diff % 3600000)  /   60000);
-      const secs  = Math.floor((diff % 60000)    /    1000);
-
-      tick(cdDays,  days);
-      tick(cdHours, hours);
-      tick(cdMins,  mins);
-      tick(cdSecs,  secs);
-    }
-
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    /* -------------------------------------------------------
-       ANIMATED PROGRESS BARS (Intersection Observer)
-    ------------------------------------------------------- */
-    const bars = document.querySelectorAll('.task-bar-fill');
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.style.animationPlayState = 'running';
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.3 });
-
-    bars.forEach(bar => {
-      bar.style.animationPlayState = 'paused';
-      io.observe(bar);
+<!-- Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
     });
-
-    /* -------------------------------------------------------
-       FLOATING PARTICLES
-    ------------------------------------------------------- */
-    (function createParticles() {
-      const container = document.getElementById('particles');
-      const colors = ['rgba(245,166,35,0.5)', 'rgba(0,229,255,0.4)', 'rgba(255,255,255,0.3)', 'rgba(255,68,68,0.35)'];
-      const sizes  = [3, 4, 5, 6, 8];
-
-      for (let i = 0; i < 30; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const size = sizes[Math.floor(Math.random() * sizes.length)];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          background: ${color};
-          left: ${Math.random() * 100}%;
-          animation-duration: ${8 + Math.random() * 16}s;
-          animation-delay: ${-Math.random() * 20}s;
-        `;
-        container.appendChild(p);
-      }
-    })();
-
-    /* -------------------------------------------------------
-       TERMINAL AUTO-SCROLL & LIVE APPEND
-    ------------------------------------------------------- */
-    (function terminalLive() {
-      const terminal = document.querySelector('.terminal');
-      const messages = [
-        { ts: () => fmtTime(), lvl: 'info', cls: 'info', msg: 'db-migration: Batch <span class="val">#{n}</span> abgeschlossen — {pct}% gesamt' },
-        { ts: () => fmtTime(), lvl: 'WRN',  cls: 'warn', msg: 'Speicher-Auslastung: <span class="val">84%</span> — Monitor aktiv' },
-        { ts: () => fmtTime(), lvl: 'INF',  cls: 'info', msg: 'heartbeat: Wartungsserver antwortet — Status <span class="val">OK</span>' },
-        { ts: () => fmtTime(), lvl: 'OK ',  cls: 'ok',   msg: 'checkpoint: Migrationspunkt gespeichert' },
-        { ts: () => fmtTime(), lvl: 'INF',  cls: 'info', msg: 'cache-invalidator: <span class="val">1 204</span> Einträge gelöscht' },
-      ];
-
-      let batchN = 1;
-      let pct    = 78;
-
-      function fmtTime() {
-        const n = new Date();
-        return `${String(n.getDate()).padStart(2,'0')}.${String(n.getMonth()+1).padStart(2,'0')} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`;
-      }
-
-      function appendLine() {
-        const tpl  = messages[Math.floor(Math.random() * messages.length)];
-        let   msg  = tpl.msg
-          .replace('{n}',   String(batchN++).padStart(4,'0'))
-          .replace('{pct}', pct < 100 ? (pct = Math.min(100, pct + Math.floor(Math.random() * 3))) : 100);
-        const line = document.createElement('div');
-        line.className = 'log-line';
-        line.innerHTML = `<span class="ts">${fmtTime()}</span><span class="lvl ${tpl.cls}">[${tpl.lvl}]</span><span class="msg">${msg}</span>`;
-        terminal.appendChild(line);
-        terminal.scrollTop = terminal.scrollHeight;
-
-        // keep max 20 lines
-        const lines = terminal.querySelectorAll('.log-line');
-        if (lines.length > 20) lines[0].remove();
-      }
-
-      setInterval(appendLine, 2800);
-    })();
-
-    /* -------------------------------------------------------
-       NOTIFY BUTTON
-    ------------------------------------------------------- */
-    function handleNotify() {
-      const email = document.getElementById('notify-email').value.trim();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        document.getElementById('notify-email').style.borderColor = 'var(--red)';
-        setTimeout(() => document.getElementById('notify-email').style.borderColor = '', 1500);
-        return;
-      }
-      document.querySelector('.notify-form').style.display = 'none';
-      document.getElementById('notify-success').style.display = 'block';
-    }
-
-    /* -------------------------------------------------------
-       GLITCH TEXT — refresh data-text periodically
-    ------------------------------------------------------- */
-    // No additional JS needed; pure CSS handles the effect
-
-    /* -------------------------------------------------------
-       RANDOM WORKER BOBBING
-    ------------------------------------------------------- */
-    (function workerBob() {
-      const workers = document.querySelectorAll('.worker');
-      workers.forEach((w, i) => {
-        const delay = i * 0.3;
-        const amp   = 4 + Math.random() * 4;
-        const dur   = 1.5 + Math.random() * 1;
-        w.style.animation = `workerBob_${i} ${dur}s ${delay}s ease-in-out infinite alternate`;
-
-        const styleEl = document.createElement('style');
-        styleEl.textContent = `
-          @keyframes workerBob_${i} {
-            0%   { transform: translateY(0px); }
-            100% { transform: translateY(-${amp}px); }
-          }
-        `;
-        document.head.appendChild(styleEl);
-      });
-    })();
-
-  </script>
+  }
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('[UNHANDLED PROMISE]', e.reason);
+  });
+</script>
 </body>
 </html>
