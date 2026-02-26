@@ -1,15 +1,781 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guthaben und Schulden</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Guthaben-Schulden-Spiel Pro – Lerne Addition und Subtraktion mit positiven und negativen Zahlen." />
+  <meta name="theme-color" content="#0d1117" />
+  <title>Guthaben-Schulden-Spiel · Pro Edition</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Rajdhani:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            orbitron: ['Orbitron','sans-serif'],
+            rajdhani:  ['Rajdhani','sans-serif'],
+            mono:      ['JetBrains Mono','monospace'],
+          },
+          colors: {
+            'game-bg': '#0d1117',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body>
-    <h1>Willkommen zu Guthaben und Schulden</h1>
-    <p>Verwalten Sie Ihre Guthaben und Schulden einfach und effektiv!</p>
-    <button type="button">Hinzufügen</button>
-    <button type="button">Entfernen</button>
-    <button type="button">Aktualisieren</button>
+
+<body class="bg-game-bg font-rajdhani text-slate-200 min-h-screen overflow-x-hidden">
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  CANVAS LAYERS                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0" aria-hidden="true"></canvas>
+<canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50" aria-hidden="true"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  FIREBASE LOADING OVERLAY                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/95 backdrop-blur-xl">
+  <div class="text-center">
+    <div class="mb-4 text-5xl">🔥</div>
+    <div class="font-orbitron text-xl text-cyan-400 mb-3">Verbinde...</div>
+    <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
+    <p class="text-slate-500 text-sm mt-4">Verbindung zu Firebase wird hergestellt</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  FIREBASE ERROR BANNER                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="fbErrorBanner" class="hidden fixed top-0 inset-x-0 z-[150] px-4 py-3 bg-red-900/80 border-b border-red-500/40 backdrop-blur-sm text-center text-sm">
+  <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
+  <span class="text-red-300">Firebase-Verbindung fehlgeschlagen — Einstellungen in <strong>firebase-config.js</strong> prüfen.</span>
+  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Schließen</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  AUTH OVERLAY (Login / Signup)                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="authOverlay" class="hidden fixed inset-0 z-[100] items-center justify-center bg-game-bg/98 backdrop-blur-2xl px-4">
+  <div class="w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="text-5xl mb-3">⚖️</div>
+      <h1 class="font-orbitron text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mb-1">
+        Guthaben-Schulden
+      </h1>
+      <p class="text-slate-400 text-sm">Pro Edition · Firebase</p>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div id="loginPanel" class="glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Anmelden</h2>
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Benutzername</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginUsername" type="text" required placeholder="benutzername"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Passwort</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="loginPassword" type="password" required placeholder="••••••••"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="loginBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-sign-in-alt mr-2"></i>Anmelden
+        </button>
+      </form>
+      <div class="mt-6 text-center space-y-3">
+        <p class="text-slate-500 text-sm">Noch kein Konto?
+          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Registrieren</button>
+        </p>
+        <button id="guestPlayBtn" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
+          <i class="fas fa-ghost mr-1"></i>Ohne Registrierung fortfahren (offline)
+        </button>
+      </div>
+    </div>
+
+    <!-- SIGNUP PANEL -->
+    <div id="signupPanel" class="hidden glass-panel rounded-2xl p-8 border border-white/10">
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Registrieren</h2>
+      <form id="signupForm" class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Benutzername *</label>
+          <div class="relative">
+            <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupUsername" type="text" required placeholder="eindeutiger_name"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Passwort *</label>
+          <div class="relative">
+            <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupPassword" type="password" required placeholder="Mindestens 6 Zeichen"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-Mail <span class="text-slate-600">(optional)</span></label>
+          <div class="relative">
+            <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <input id="signupEmail" type="email" placeholder="beispiel@email.com"
+              class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
+          </div>
+        </div>
+        <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
+        <button id="signupBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
+          <i class="fas fa-user-plus mr-2"></i>Registrieren
+        </button>
+      </form>
+      <div class="mt-6 text-center">
+        <p class="text-slate-500 text-sm">Bereits ein Konto?
+          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Anmelden</button>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  CRASH SCREEN                                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="crashScreen" class="fixed inset-0 z-[999] hidden flex-col items-center justify-center bg-black/90 backdrop-blur-xl">
+  <div class="text-center p-8 max-w-md">
+    <div class="text-6xl mb-4">⚠️</div>
+    <h2 class="font-orbitron text-2xl text-red-400 mb-3">Kritischer Fehler</h2>
+    <p id="crashMessage" class="text-slate-300 mb-6">Ein unerwarteter Fehler ist aufgetreten.</p>
+    <button id="crashRestart" onclick="localStorage.removeItem('gss_save_v3'); location.reload()" class="btn-primary px-6 py-3 rounded-xl font-orbitron">
+      <i class="fas fa-redo mr-2"></i>Neu starten
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  TOAST CONTAINER                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="toastContainer" class="fixed top-4 right-4 z-[90] flex flex-col gap-3 pointer-events-none" aria-live="polite"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  NOTIFICATION PANEL                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="notifPanel" class="hidden fixed top-16 right-4 z-[80] w-80 glass-panel rounded-2xl border border-white/10 p-4 shadow-2xl" style="max-height:420px;overflow-y:auto;">
+  <div id="notificationsContainer"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  INBOX MODAL (message from admin on login)                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="inboxModal" class="hidden fixed inset-0 z-[120] items-center justify-center px-4">
+  <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
+  <div class="relative glass-panel rounded-2xl p-8 max-w-lg w-full border border-cyan-500/20">
+    <button id="closeInboxBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center gap-3 mb-5">
+      <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+        <i class="fas fa-envelope text-yellow-400"></i>
+      </div>
+      <div>
+        <div class="font-orbitron text-sm text-yellow-400">Neue Nachricht</div>
+        <div class="text-xs text-slate-500">Eine Nachricht wartet auf dich nach dem Login</div>
+      </div>
+    </div>
+    <div class="mb-2 text-xs text-slate-500">Von: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
+    <div class="mb-1 text-xs text-slate-500">Datum: <span id="inboxMsgDate" class="text-slate-400"></span></div>
+    <h3 id="inboxMsgSubject" class="font-orbitron text-lg text-slate-200 my-3"></h3>
+    <p id="inboxMsgBody" class="text-slate-300 text-sm leading-relaxed mb-5 p-4 bg-white/5 rounded-xl border border-white/5"></p>
+    <div class="flex gap-3">
+      <textarea id="inboxReplyInput" rows="2" placeholder="Antworten..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
+      <button id="inboxReplyBtn" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
+        <i class="fas fa-reply mr-1"></i>Senden
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  PROFILE OVERLAY                                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="profileOverlay" class="hidden fixed inset-0 z-[90] flex items-center justify-center px-4 bg-black/50 backdrop-blur-sm">
+  <div class="glass-panel rounded-2xl p-8 max-w-2xl w-full border border-white/10 max-h-[90vh] overflow-y-auto relative">
+    <button id="closeProfileBtn" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
+      <i class="fas fa-user-circle mr-2"></i>Profil
+    </h2>
+    <div id="profileContent"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  ADMIN OVERLAY                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="adminOverlay" class="hidden fixed inset-0 z-[90] items-start justify-center px-4 py-6 bg-black/60 backdrop-blur-sm overflow-y-auto">
+  <div class="glass-panel rounded-2xl w-full max-w-5xl border border-yellow-500/20 min-h-[80vh]">
+    <!-- Admin Header -->
+    <div class="flex items-center justify-between p-6 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+          <i class="fas fa-shield-alt text-yellow-400"></i>
+        </div>
+        <div>
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin-Panel</h2>
+          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Verwaltung</p>
+        </div>
+      </div>
+      <button id="closeAdminBtn" class="text-slate-400 hover:text-white text-2xl transition-colors">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div class="flex gap-1 px-6 pt-4 border-b border-white/5 overflow-x-auto scrollbar-thin pb-0">
+      <button class="admin-tab-btn active-admin-tab" data-tab="stats">
+        <i class="fas fa-chart-bar mr-2"></i>Statistiken
+      </button>
+      <button class="admin-tab-btn" data-tab="users">
+        <i class="fas fa-users mr-2"></i>Benutzer
+      </button>
+      <button class="admin-tab-btn" data-tab="messages">
+        <i class="fas fa-envelope mr-2"></i>Nachrichten
+      </button>
+      <button class="admin-tab-btn" data-tab="devices">
+        <i class="fas fa-laptop mr-2"></i>Geräte
+      </button>
+      <button class="admin-tab-btn" data-tab="logs">
+        <i class="fas fa-history mr-2"></i>Protokolle
+      </button>
+    </div>
+
+    <!-- Admin Tab Panes -->
+    <div class="p-6">
+      <div class="admin-tab-pane" data-pane="stats" id="admin-pane-stats"></div>
+      <div class="admin-tab-pane hidden" data-pane="users" id="admin-pane-users"></div>
+      <div class="admin-tab-pane hidden" data-pane="messages" id="admin-pane-messages"></div>
+      <div class="admin-tab-pane hidden" data-pane="devices" id="admin-pane-devices"></div>
+      <div class="admin-tab-pane hidden" data-pane="logs" id="admin-pane-logs"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Sub-Modal (Edit User) -->
+<div id="adminSubModal" class="hidden fixed inset-0 z-[100] items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+  <div class="glass-panel rounded-2xl p-8 max-w-3xl w-full border border-cyan-500/20 max-h-[90vh] overflow-y-auto relative">
+    <button id="closeSubModal" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <div id="adminSubContent"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  RULES MODAL                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="rulesModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <div class="modal-backdrop absolute inset-0" id="rulesBackdrop"></div>
+  <div class="modal-content glass-panel relative z-10 max-w-3xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
+    <button id="closeRules" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl" aria-label="Schließen">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 id="rulesTitle" class="font-orbitron text-3xl font-bold text-cyan-400 mb-2 neon-text">
+      <i class="fas fa-book-open mr-3"></i><span data-i18n="rules_title">Spielregeln</span>
+    </h2>
+    <p class="text-slate-400 mb-8 text-lg" data-i18n="rules_subtitle">Verstehe die Magie hinter positiven und negativen Zahlen.</p>
+
+    <div class="rules-section mb-6 p-6 rounded-xl border border-cyan-500/20 bg-cyan-500/5">
+      <h3 class="font-orbitron text-lg font-semibold text-cyan-300 mb-4">
+        <i class="fas fa-lightbulb mr-2 text-yellow-400"></i><span data-i18n="rules_concept">Das Grundprinzip</span>
+      </h3>
+      <p class="text-slate-300 leading-relaxed mb-4" data-i18n="rules_concept_text">
+        Stell dir vor, du hast zwei Arten von Tickets: <span class="text-green-400 font-semibold">Positive Tickets (+1€)</span> und <span class="text-red-400 font-semibold">Negative Tickets (-1€)</span>.
+        Dein Kontostand bestimmt sich durch die Summe aller Tickets, die du besitzt.
+      </p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div class="scenario-card p-5 rounded-xl border border-green-500/30 bg-green-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
+          <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 3 Positive Tickets"</p>
+        <div class="math-display">+(+3) = <span class="text-green-400">+3</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-red-500/30 bg-red-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-nehmen" data-i18n="nehmen">NEHMEN</span>
+          <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Nehmen 4 Negative Tickets"</p>
+        <div class="math-display">+(-4) = <span class="text-red-400">-4</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-orange-500/30 bg-orange-500/5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
+          <span class="badge-item badge-positiv" data-i18n="positiv">POSITIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 2 Positive Tickets"</p>
+        <div class="math-display">-(+2) = <span class="text-red-400">-2</span></div>
+      </div>
+      <div class="scenario-card p-5 rounded-xl border border-purple-500/30 bg-purple-500/5 relative overflow-hidden">
+        <div class="absolute top-2 right-2 text-xs text-purple-300 bg-purple-500/20 px-2 py-1 rounded-full">✨ Magie!</div>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="badge-action badge-abgeben" data-i18n="abgeben">ABGEBEN</span>
+          <span class="badge-item badge-negativ" data-i18n="negativ">NEGATIV</span>
+        </div>
+        <p class="text-slate-300 text-sm mb-2">„Abgeben 5 Negative Tickets"</p>
+        <div class="math-display">-(-5) = <span class="text-green-400">+5</span></div>
+      </div>
+    </div>
+    <div class="p-6 rounded-xl border border-purple-500/30 bg-purple-500/5 mb-6">
+      <h3 class="font-orbitron text-base font-semibold text-purple-300 mb-3">
+        <i class="fas fa-infinity mr-2"></i>Die Mathematische Regel
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-center">
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">+(+) = +</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-red-400 text-lg font-bold">+(-) = -</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-red-400 text-lg font-bold">-(+) = -</div></div>
+        <div class="p-3 rounded-lg bg-white/5"><div class="font-mono text-green-400 text-lg font-bold">-(-) = +</div></div>
+      </div>
+    </div>
+    <button id="closeRulesBtn" class="mt-4 w-full btn-primary py-4 rounded-xl font-orbitron text-lg font-semibold">
+      <i class="fas fa-play mr-2"></i><span data-i18n="start_game">Spiel starten!</span>
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  TEACHER MODAL                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="teacherModal" class="modal-overlay fixed inset-0 z-[100] hidden" role="dialog" aria-modal="true">
+  <div class="modal-backdrop absolute inset-0" id="teacherBackdrop"></div>
+  <div class="modal-content glass-panel relative z-10 max-w-2xl w-full mx-4 my-8 max-h-[90vh] overflow-y-auto rounded-2xl p-8">
+    <button id="closeTeacher" class="absolute top-4 right-4 text-slate-400 hover:text-cyan-400 transition-colors text-2xl">
+      <i class="fas fa-times"></i>
+    </button>
+    <h2 class="font-orbitron text-2xl font-bold text-yellow-400 mb-6">🎓 Lehrermodus</h2>
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Min. Zahl</label>
+        <input type="number" id="teacherMin" value="1" min="1" max="50" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Max. Zahl</label>
+        <input type="number" id="teacherMax" value="10" min="1" max="100" class="game-input w-full px-3 py-2 rounded-lg text-center font-mono" />
+      </div>
+    </div>
+    <div class="mb-4">
+      <label class="block text-xs text-slate-400 mb-2">Timer</label>
+      <div class="flex items-center gap-3">
+        <input type="range" id="teacherTimer" min="0" max="120" value="0" step="5" class="flex-1 accent-yellow-400" />
+        <span id="teacherTimerDisplay" class="font-orbitron text-yellow-400 w-20 text-center">Aus</span>
+      </div>
+    </div>
+    <div class="mb-4 flex items-center gap-3">
+      <label class="relative inline-flex items-center cursor-pointer">
+        <input type="checkbox" id="teacherCheatSheet" class="sr-only" />
+        <div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-yellow-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+        <span class="ml-3 text-sm text-slate-300">Spickzettel (Antwort anzeigen)</span>
+      </label>
+    </div>
+    <div id="cheatSheetPanel" class="mt-4 hidden"></div>
+    <div class="mb-4">
+      <label class="block text-xs text-slate-400 mb-1">Level fixieren</label>
+      <select id="teacherLevel" class="game-input w-full px-3 py-2 rounded-lg font-mono">
+        <option value="-1">Auto (nach Streak)</option>
+        <option value="0">Anfänger (1–5)</option>
+        <option value="1">Einsteiger (1–10)</option>
+        <option value="2">Fortgeschritten (1–20)</option>
+        <option value="3">Profi (1–50)</option>
+        <option value="4">Experte (1–100)</option>
+      </select>
+    </div>
+    <button id="applyTeacher" class="w-full py-3 rounded-xl font-orbitron text-sm font-bold bg-yellow-500/20 border border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/30 transition-all">
+      <i class="fas fa-check mr-2"></i>Anwenden & Spielen
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  APP WRAPPER (shown after login)                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div id="appWrapper" class="hidden relative z-10 min-h-screen flex flex-col">
+
+  <!-- ─── HEADER ───────────────────────────────────────────────────────────── -->
+  <header class="sticky top-0 z-40 px-4 py-3 border-b border-white/5 backdrop-blur-xl bg-game-bg/80">
+    <div class="max-w-6xl mx-auto flex items-center gap-3 flex-wrap">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <span class="text-2xl">⚖️</span>
+        <div class="hidden sm:block">
+          <div class="font-orbitron text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 leading-none">Guthaben</div>
+          <div class="font-orbitron text-xs text-slate-500 leading-none">Schulden · Pro</div>
+        </div>
+      </div>
+
+      <!-- Spacer -->
+      <div class="flex-1"></div>
+
+      <!-- Streak & Score -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
+          <span id="streakFlame" class="streak-flame text-xl" aria-hidden="true">🔥</span>
+          <div id="streakCount" class="font-orbitron text-lg font-bold text-orange-400">0</div>
+        </div>
+        <div class="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl">
+          <i class="fas fa-star text-yellow-400 text-xs"></i>
+          <div id="highScore" class="font-orbitron text-lg font-bold text-yellow-400">0</div>
+        </div>
+      </div>
+
+      <!-- Audio / Rules -->
+      <div class="flex items-center gap-2">
+        <button id="audioToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" title="Audio ein/aus">
+          <i class="fas fa-volume-up text-cyan-400" id="audioIcon"></i>
+        </button>
+        <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" aria-label="Spielregeln">
+          <i class="fas fa-book text-slate-400"></i>
+        </button>
+        <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden">
+          <i class="fas fa-chalkboard-teacher text-yellow-400"></i>
+        </button>
+      </div>
+
+      <!-- User Area -->
+      <div id="headerUserArea" class="flex items-center gap-2"></div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN TABS ─────────────────────────────────────────────────────────── -->
+  <nav class="px-4 pt-4 pb-0 border-b border-white/5">
+    <div class="max-w-6xl mx-auto flex gap-1 overflow-x-auto scrollbar-thin">
+      <button class="main-tab-btn active-tab" data-tab="game">
+        <i class="fas fa-gamepad mr-2"></i>Spiel
+      </button>
+      <button class="main-tab-btn" data-tab="stats">
+        <i class="fas fa-chart-line mr-2"></i>Statistiken
+      </button>
+      <button class="main-tab-btn" data-tab="tickets">
+        <i class="fas fa-ticket-alt mr-2"></i>Tickets
+      </button>
+      <button class="main-tab-btn" data-tab="leaderboard">
+        <i class="fas fa-trophy mr-2"></i>Rangliste
+      </button>
+      <button class="main-tab-btn" data-tab="friends">
+        <i class="fas fa-user-friends mr-2"></i>Freunde
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── MAIN CONTENT ─────────────────────────────────────────────────────── -->
+  <main class="flex-1 px-4 py-6">
+    <div class="max-w-6xl mx-auto">
+
+      <!-- ── LEVEL / SCORE HEADER ── -->
+      <div class="glass-panel rounded-2xl p-4 mb-6 border border-white/5">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+              <div class="text-slate-400 text-xs uppercase tracking-widest">Level</div>
+              <span id="levelDisplay" class="font-orbitron text-lg font-black text-cyan-400">1</span>
+            </div>
+            <div>
+              <div class="font-semibold text-slate-200 text-sm" id="levelName">Anfänger</div>
+              <div class="text-slate-500 text-xs" id="levelRange">Zahlen: 1–5</div>
+            </div>
+          </div>
+          <div id="timerDisplay" class="hidden font-orbitron text-xl font-bold text-yellow-400">
+            <i class="fas fa-clock mr-2 text-sm"></i><span id="timerValue">--</span>s
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Punkte</div>
+            <div id="scoreDisplay" class="font-orbitron text-xl font-bold text-cyan-400">0</div>
+          </div>
+        </div>
+        <div class="mt-3 relative h-2 bg-white/5 rounded-full overflow-hidden">
+          <div id="progressBar" class="progress-fill h-full rounded-full w-0 transition-all duration-700"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-slate-600 text-xs" id="progressLabel">0 / 5 bis Level 2</span>
+          <span class="text-slate-600 text-xs" id="progressPct">0%</span>
+        </div>
+      </div>
+
+      <!-- ══ GAME TAB ══════════════════════════════════════════════════════════ -->
+      <div id="tab-game" class="tab-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <!-- Player Card -->
+          <div class="glass-panel rounded-2xl p-5 border-cyan-500/20 relative overflow-hidden player-card" id="userCard">
+            <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="you">DU</div>
+            <div id="userBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-cyan-400" aria-live="polite">0</div>
+            <div id="userTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-cyan-400 font-semibold hidden">
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i>DEIN ZUG
+            </div>
+          </div>
+          <!-- Computer Card -->
+          <div class="glass-panel rounded-2xl p-5 border-purple-500/20 relative overflow-hidden" id="computerCard">
+            <div class="text-xs font-orbitron text-slate-500 uppercase tracking-widest mb-2" data-i18n="computer">COMPUTER</div>
+            <div id="computerBalance" class="font-orbitron text-4xl md:text-5xl font-black balance-display text-purple-400" aria-live="polite">0</div>
+            <div id="computerTurnIndicator" class="turn-indicator absolute bottom-3 right-3 text-xs text-purple-400 font-semibold hidden">
+              <i class="fas fa-circle-dot animate-pulse mr-1"></i>COMPUTER ZUG
+            </div>
+          </div>
+        </div>
+
+        <!-- Task Card -->
+        <div class="glass-panel rounded-2xl p-6 border border-white/5 relative overflow-hidden mb-6" id="taskCard">
+          <div class="flex items-center gap-3 mb-5">
+            <div id="turnBadge" class="px-3 py-1 rounded-full text-xs font-orbitron font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-i18n="your_turn_badge">DEIN ZUG</div>
+          </div>
+
+          <div id="instructionDisplay" class="instruction-display text-center py-6 rounded-xl mb-5 relative overflow-hidden">
+            <div id="actionWord" class="font-orbitron text-3xl md:text-4xl font-black text-cyan-400 mb-2">–</div>
+            <div id="amountDisplay" class="font-orbitron text-5xl md:text-6xl font-black text-white my-2">–</div>
+            <div id="itemWord" class="font-orbitron text-xl md:text-2xl font-semibold text-slate-300">–</div>
+            <div id="ticketVisual" class="flex justify-center gap-2 mt-4 flex-wrap min-h-[2.5rem]"></div>
+          </div>
+
+          <div id="cheatOverlay" class="hidden mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-center">
+            <span class="text-yellow-400 text-xs mr-2">Antwort:</span>
+            <span id="cheatAnswer" class="text-yellow-400 font-mono font-bold text-sm"></span>
+          </div>
+
+          <!-- Input Area -->
+          <div id="inputArea" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="your_expression">DEIN AUSDRUCK</label>
+                <input type="text" id="expressionInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. -(-5)" autocomplete="off" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-500 uppercase tracking-widest mb-2" data-i18n="new_balance">NEUER STAND</label>
+                <input type="number" id="balanceInput" class="game-input w-full px-4 py-3 rounded-xl font-mono text-lg text-center" placeholder="z.B. 5" />
+              </div>
+            </div>
+            <button id="checkBtn" class="w-full btn-primary py-4 rounded-xl font-orbitron text-xl font-bold tracking-wider relative overflow-hidden group" aria-label="Antwort prüfen">
+              <span class="relative z-10" data-i18n="check">PRÜFEN</span>
+            </button>
+          </div>
+
+          <!-- Computer Thinking -->
+          <div id="computerThinking" class="hidden text-center py-8">
+            <div class="inline-flex items-center gap-3 text-purple-400">
+              <div class="thinking-dots flex gap-2">
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:0ms"></div>
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:150ms"></div>
+                <div class="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style="animation-delay:300ms"></div>
+              </div>
+              <span class="font-orbitron text-sm" data-i18n="computer_thinking">COMPUTER DENKT</span>
+            </div>
+          </div>
+
+          <!-- Feedback -->
+          <div id="feedbackArea" class="feedback-area rounded-2xl p-5 hidden mt-4" role="alert" aria-live="assertive">
+            <div class="flex items-start gap-4">
+              <div id="feedbackIcon" class="text-3xl flex-shrink-0"></div>
+              <div>
+                <h3 id="feedbackTitle" class="font-orbitron text-lg font-bold mb-1"></h3>
+                <p id="feedbackMessage" class="text-slate-300 leading-relaxed"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Game Log -->
+          <div class="glass-panel rounded-2xl p-5 border border-white/5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="game_log">Spiellog</h3>
+            </div>
+            <div id="gameLog" class="space-y-2 max-h-64 overflow-y-auto scrollbar-thin" aria-live="polite"></div>
+          </div>
+
+          <!-- Achievements -->
+          <div class="glass-panel rounded-2xl p-5 border border-white/5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest" data-i18n="achievements">Erfolge</h3>
+            </div>
+            <div id="achievementsGrid" class="grid grid-cols-3 gap-2"></div>
+          </div>
+        </div>
+
+        <!-- New Game Button -->
+        <div class="mt-6">
+          <button id="newGameBtn" class="w-full btn-secondary py-3 rounded-xl font-orbitron text-sm font-bold tracking-wider">
+            <i class="fas fa-redo mr-2"></i><span data-i18n="new_game">Neues Spiel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ STATS TAB ═════════════════════════════════════════════════════════ -->
+      <div id="tab-stats" class="tab-content hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statTotalCorrect" class="font-orbitron text-4xl font-black text-cyan-400">0</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="total_correct">Richtig</div>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statAccuracy" class="font-orbitron text-4xl font-black text-green-400">0%</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="accuracy">Genauigkeit</div>
+          </div>
+          <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
+            <div id="statMaxStreak" class="font-orbitron text-4xl font-black text-orange-400">0</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststreak</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="glass-panel rounded-2xl p-6 border border-white/5">
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="accuracy_chart">Genauigkeit</h3>
+            <canvas id="accuracyChart"></canvas>
+          </div>
+          <div class="glass-panel rounded-2xl p-6 border border-white/5">
+            <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="operations_chart">Operationen</h3>
+            <canvas id="opsChart"></canvas>
+          </div>
+        </div>
+        <div class="glass-panel rounded-2xl p-6 border border-white/5 mb-6">
+          <h3 class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4" data-i18n="heatmap_title">Aktivitätsheatmap</h3>
+          <div id="heatmapGrid" class="grid gap-3" style="grid-template-columns: repeat(4, 1fr)"></div>
+        </div>
+        <div class="text-center">
+          <button id="resetStats" class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
+            <i class="fas fa-trash mr-2"></i>Statistiken zurücksetzen
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ TICKETS TAB ════════════════════════════════════════════════════════ -->
+      <div id="tab-tickets" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-8">
+          <h2 class="font-orbitron text-xl font-bold text-center text-slate-200 mb-2" data-i18n="ticket_stack_title">Visueller Ticket-Stack</h2>
+          <p class="text-slate-400 text-sm text-center mb-8" data-i18n="ticket_stack_desc">Beobachte, wie Tickets in dein Konto fließen oder abgehen.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div>
+              <div class="text-center mb-4">
+                <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-2" data-i18n="your_stack">Dein Ticket-Stack</div>
+                <div id="stackBalance" class="font-orbitron text-5xl font-black text-cyan-400 mb-4">0</div>
+              </div>
+              <div id="ticketStackArea" class="relative min-h-48 bg-white/3 rounded-2xl border border-white/10 overflow-hidden flex flex-wrap content-end gap-1 p-3">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="stackEmptyMsg">
+                  <span class="text-slate-600 text-sm font-orbitron" data-i18n="stack_empty">Noch keine Tickets</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="font-orbitron text-sm text-slate-400 uppercase tracking-widest mb-4 text-center" data-i18n="simulate">Simulation</div>
+              <div class="space-y-4">
+                <div class="glass-panel rounded-xl p-4">
+                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2" data-i18n="last_op">Letzte Operation</div>
+                  <div id="lastOpDisplay" class="font-mono text-2xl text-center text-slate-300">—</div>
+                </div>
+                <div class="glass-panel rounded-xl p-4">
+                  <div class="text-xs text-slate-400 uppercase tracking-widest mb-2">Legende</div>
+                  <div class="flex gap-4 justify-center">
+                    <div class="flex items-center gap-2">
+                      <div class="w-5 h-5 rounded bg-green-500/40 border border-green-500/60 flex items-center justify-center text-xs text-green-400 font-bold">+</div>
+                      <span class="text-slate-400 text-xs">Positive Tickets</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <div class="w-5 h-5 rounded bg-red-500/40 border border-red-500/60 flex items-center justify-center text-xs text-red-400 font-bold">−</div>
+                      <span class="text-slate-400 text-xs">Negative Tickets</span>
+                    </div>
+                  </div>
+                </div>
+                <div id="svgAnimationArea" class="relative h-32 rounded-xl bg-white/3 border border-white/10 overflow-hidden">
+                  <svg id="ticketFlightSVG" class="absolute inset-0 w-full h-full" viewBox="0 0 400 120" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LEADERBOARD TAB ═══════════════════════════════════════════════════ -->
+      <div id="tab-leaderboard" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-white/5">
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
+            <i class="fas fa-trophy mr-2"></i>Rangliste
+          </h2>
+          <div id="leaderboardContent"></div>
+        </div>
+      </div>
+
+      <!-- ══ FRIENDS TAB ════════════════════════════════════════════════════════ -->
+      <div id="tab-friends" class="tab-content hidden">
+        <div class="glass-panel rounded-2xl p-6 border border-white/5">
+          <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
+            <i class="fas fa-user-friends mr-2"></i>Freunde
+          </h2>
+          <div id="friendsContent"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
+  <footer class="py-6 px-4 border-t border-white/5">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+      <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2025</p>
+      <a href="https://github.com/Higer" target="_blank" rel="noopener noreferrer" class="maker-signature-glass group">
+        <div class="maker-glass-inner">
+          <span class="text-slate-400 text-sm">Made with</span>
+          <i class="fas fa-heart text-red-500 text-sm animate-pulse mx-1"></i>
+          <span class="text-slate-400 text-sm">by</span>
+          <span class="font-orbitron font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mx-1 maker-name">Higer</span>
+          <i class="fab fa-github text-slate-400 group-hover:text-white transition-colors text-base"></i>
+        </div>
+      </a>
+      <p class="text-slate-700 text-xs">Firebase Edition ✦</p>
+    </div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!--  SCRIPTS                                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<script type="module" src="js/app.js"></script>
+
+<!-- Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+  window.addEventListener('unhandledrejection', (e) => {
+    console.error('[UNHANDLED PROMISE]', e.reason);
+  });
+</script>
 </body>
 </html>
