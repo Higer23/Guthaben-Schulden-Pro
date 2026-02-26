@@ -10,7 +10,8 @@
  *   - Use users_by_username index for login (Güvenlik 4)
  */
 
-// ─── YOUR FIREBASE CONFIG ────────────────────────────────
+// ─── YOUR FIREBASE CONFIG HERE ────────────────────────────────
+// Replace with your actual Firebase project config
 const FIREBASE_CONFIG = {
   apiKey:            "AIzaSyB6dLJ5VYAM8LaqQxy0vZDHL-xlMjf6qrU",
   authDomain:        "guthaben-schulden-spiel.firebaseapp.com",
