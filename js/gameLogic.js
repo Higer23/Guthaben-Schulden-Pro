@@ -79,11 +79,27 @@ export function createInitialState() {
  * @returns {Instruction}
  */
 export function generateInstruction(levelIndex, currentBalance = 0) {
-  const level     = LEVELS[levelIndex] ?? LEVELS[0];
-  const [min, max]= level.range;
-  const amount    = randomInt(min, max);
-  const action    = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
-  const itemType  = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
+  const level      = LEVELS[levelIndex] ?? LEVELS[0];
+  const [min, max] = level.range;
+
+  // Level 5–6: Üslü ifadeler veya parantezli bileşik işlemler
+  if (levelIndex >= 4) {
+    return Math.random() < 0.5
+      ? _genPower(levelIndex, currentBalance, min, max)
+      : _genCompound(levelIndex, currentBalance, min, max);
+  }
+
+  // Level 3–4: Çarpma veya bölme
+  if (levelIndex >= 2) {
+    return Math.random() < 0.5
+      ? _genMultiply(levelIndex, currentBalance, min, max)
+      : _genDivide(levelIndex, currentBalance, min, max);
+  }
+
+  // Level 1–2: Mevcut toplama/çıkarma davranışı
+  const amount     = randomInt(min, max);
+  const action     = ACTIONS[Math.floor(Math.random() * ACTIONS.length)];
+  const itemType   = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
   const mathResult = action.math * itemType.math * amount;
 
   const actionSign = action.math === 1 ? '+' : '-';
@@ -101,6 +117,79 @@ export function generateInstruction(levelIndex, currentBalance = 0) {
     currentBalance,
     levelIndex,
     isNegNeg: action.math === -1 && itemType.math === -1,
+    operatorType: 'addsubtract',
+  };
+}
+
+/** Level 3–4: Tamsayı çarpma */
+function _genMultiply(levelIndex, currentBalance, min, max) {
+  const a = randomInt(min, Math.min(max, 9));
+  const bSign = Math.random() < 0.5 ? 1 : -1;
+  const b = randomInt(min, Math.min(max, 9));
+  const mathResult = a * bSign * b;
+  const bStr = bSign === -1 ? `(−${b})` : `${b}`;
+  const correctExpression = `${a}×${bStr}`;
+  const newBalance = currentBalance + mathResult;
+  return {
+    action: ACTIONS[0], itemType: ITEM_TYPES[0],
+    amount: a, mathResult, correctExpression,
+    newBalance, currentBalance, levelIndex,
+    isNegNeg: false, operatorType: 'multiply',
+  };
+}
+
+/** Level 3–4: Tamsayı bölme (yalnızca tam bölünen) */
+function _genDivide(levelIndex, currentBalance, min, max) {
+  const divisor = randomInt(2, Math.min(max, 6));
+  const quotientSign = Math.random() < 0.5 ? 1 : -1;
+  const quotient = randomInt(min, Math.min(max, 6));
+  const dividend = divisor * quotient * quotientSign;
+  const mathResult = quotientSign * quotient;
+  const dividendStr = dividend < 0 ? `(−${Math.abs(dividend)})` : `${dividend}`;
+  const correctExpression = `${dividendStr}÷${divisor}`;
+  const newBalance = currentBalance + mathResult;
+  return {
+    action: ACTIONS[0], itemType: ITEM_TYPES[0],
+    amount: Math.abs(dividend), mathResult, correctExpression,
+    newBalance, currentBalance, levelIndex,
+    isNegNeg: false, operatorType: 'divide',
+  };
+}
+
+/** Level 5–6: Üslü ifadeler */
+function _genPower(levelIndex, currentBalance, min, max) {
+  const base = randomInt(-Math.min(max, 5), Math.min(max, 5)) || 2;
+  const exp = Math.random() < 0.5 ? 2 : 3;
+  const mathResult = Math.pow(base, exp);
+  const baseStr = base < 0 ? `(−${Math.abs(base)})` : `${base}`;
+  const expStr = exp === 2 ? '²' : '³';
+  const correctExpression = `${baseStr}${expStr}`;
+  const newBalance = currentBalance + mathResult;
+  return {
+    action: ACTIONS[0], itemType: ITEM_TYPES[0],
+    amount: Math.abs(base), mathResult, correctExpression,
+    newBalance, currentBalance, levelIndex,
+    isNegNeg: false, operatorType: 'power',
+  };
+}
+
+/** Level 5–6: Parantezli bileşik işlemler */
+function _genCompound(levelIndex, currentBalance, min, max) {
+  const a = randomInt(min, Math.min(max, 8));
+  const bSign = Math.random() < 0.5 ? 1 : -1;
+  const b = randomInt(min, Math.min(max, 8));
+  const multiplier = randomInt(2, Math.min(max, 5)) * (Math.random() < 0.5 ? 1 : -1);
+  const inner = a + bSign * b;
+  const mathResult = inner * multiplier;
+  const bStr = bSign === -1 ? `(−${b})` : `+${b}`;
+  const mStr = multiplier < 0 ? `(−${Math.abs(multiplier)})` : `${multiplier}`;
+  const correctExpression = `(${a}${bStr})×${mStr}`;
+  const newBalance = currentBalance + mathResult;
+  return {
+    action: ACTIONS[0], itemType: ITEM_TYPES[0],
+    amount: Math.abs(inner), mathResult, correctExpression,
+    newBalance, currentBalance, levelIndex,
+    isNegNeg: false, operatorType: 'compound',
   };
 }
 
@@ -125,12 +214,15 @@ export function validateAnswer(rawExpression, rawBalance, instruction) {
 
   const { correctExpression, newBalance, mathResult } = instruction;
 
-  // Normalize expression
+  // Normalize expression — neue Operatoren unterstützen
   const normalised = String(rawExpression)
     .trim()
     .replace(/\s/g, '')
     .replace(/×/g, '*')
-    .replace(/−/g, '-');
+    .replace(/÷/g, '/')
+    .replace(/−/g, '-')
+    .replace(/²/g, '**2')
+    .replace(/³/g, '**3');
 
   const expressionOk = isValidExpression(normalised, correctExpression, mathResult);
 
@@ -156,7 +248,7 @@ function isValidExpression(userExpr, canonical, expected) {
   if (userExpr.toLowerCase() === canonical.toLowerCase()) return true;
 
   try {
-    if (!/^[0-9+\-().]+$/.test(userExpr)) return false;
+    if (!/^[0-9+\-×÷²³\^*\/().]+$/.test(userExpr)) return false;
     // eslint-disable-next-line no-new-func
     const result = Function('"use strict"; return (' + userExpr + ')')();
     if (typeof result === 'number' && isFinite(result)) {
@@ -268,11 +360,27 @@ export function formatSigned(n) {
  */
 export function buildHint(instruction) {
   if (!instruction) return '';
-  const { action, itemType, amount, mathResult, correctExpression, currentBalance, newBalance } = instruction;
-  const verb   = action.math === 1 ? 'nimmst' : 'gibst';
+  const { action, itemType, amount, mathResult, correctExpression, currentBalance, newBalance, operatorType } = instruction;
+
   const change = mathResult >= 0
     ? `steigt dein Guthaben um ${Math.abs(mathResult)}`
     : `sinkt dein Guthaben um ${Math.abs(mathResult)}`;
+  const balanceStr = `${currentBalance} ${mathResult >= 0 ? '+' : '−'} ${Math.abs(mathResult)} = <strong>${newBalance}</strong>`;
 
-  return `💡 Du ${verb} ${amount} ${itemType.de} Ticket${amount !== 1 ? 's' : ''} — das entspricht <strong>${correctExpression}</strong>. Daher ${change}: ${currentBalance} ${mathResult >= 0 ? '+' : '−'} ${Math.abs(mathResult)} = <strong>${newBalance}</strong>.`;
+  if (operatorType === 'multiply') {
+    return `💡 Das Ergebnis von <strong>${correctExpression}</strong> ergibt ${mathResult}. Daher ${change}: ${balanceStr}.`;
+  }
+  if (operatorType === 'divide') {
+    return `💡 Das Ergebnis von <strong>${correctExpression}</strong> ergibt ${mathResult}. Daher ${change}: ${balanceStr}.`;
+  }
+  if (operatorType === 'power') {
+    return `💡 <strong>${correctExpression}</strong> bedeutet: die Zahl mit sich selbst multiplizieren. Das Ergebnis ist ${mathResult}. Daher ${change}: ${balanceStr}.`;
+  }
+  if (operatorType === 'compound') {
+    return `💡 Zuerst den Klammerausdruck berechnen, dann multiplizieren: <strong>${correctExpression}</strong> = ${mathResult}. Daher ${change}: ${balanceStr}.`;
+  }
+
+  // addsubtract (Standard)
+  const verb = action.math === 1 ? 'nimmst' : 'gibst';
+  return `💡 Du ${verb} ${amount} ${itemType.de} Ticket${amount !== 1 ? 's' : ''} — das entspricht <strong>${correctExpression}</strong>. Daher ${change}: ${balanceStr}.`;
 }
