@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Guthaben-Schulden-Spiel Pro – Lerne Addition und Subtraktion mit positiven und negativen Zahlen." />
   <meta name="theme-color" content="#0d1117" />
-  <title>Guthaben-Schulden-Spiel · Pro Edition</title>
+  <title>23.02 bis 23.00 Uhr wird diese Website repariert. Leider befindet sie sich derzeit in Wartung. </title>
 
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.svg" />
@@ -59,9 +59,9 @@
 <div id="fbLoadingOverlay" class="fixed inset-0 z-[200] flex items-center justify-center bg-game-bg/95 backdrop-blur-xl">
   <div class="text-center">
     <div class="mb-4 text-5xl">🔥</div>
-    <div class="font-orbitron text-xl text-cyan-400 mb-3">Verbinde...</div>
+    <div class="font-orbitron text-xl text-cyan-400 mb-3">Bağlanıyor...</div>
     <div class="w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin mx-auto"></div>
-    <p class="text-slate-500 text-sm mt-4">Verbindung zu Firebase wird hergestellt</p>
+    <p class="text-slate-500 text-sm mt-4">Firebase ile bağlantı kuruluyor</p>
   </div>
 </div>
 
@@ -70,8 +70,8 @@
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 <div id="fbErrorBanner" class="hidden fixed top-0 inset-x-0 z-[150] px-4 py-3 bg-red-900/80 border-b border-red-500/40 backdrop-blur-sm text-center text-sm">
   <i class="fas fa-exclamation-triangle text-red-400 mr-2"></i>
-  <span class="text-red-300">Firebase-Verbindung fehlgeschlagen — Einstellungen in <strong>firebase-config.js</strong> prüfen.</span>
-  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Schließen</button>
+  <span class="text-red-300">Firebase bağlantısı kurulamadı — <strong>firebase-config.js</strong> dosyasındaki ayarları kontrol et.</span>
+  <button class="ml-4 text-xs underline text-red-300 hover:text-white" onclick="this.parentElement.classList.add('hidden')">Kapat</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
@@ -90,18 +90,18 @@
 
     <!-- LOGIN PANEL -->
     <div id="loginPanel" class="glass-panel rounded-2xl p-8 border border-white/10">
-      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Anmelden</h2>
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Giriş Yap</h2>
       <form id="loginForm" class="space-y-4">
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Benutzername</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı</label>
           <div class="relative">
             <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="loginUsername" type="text" required placeholder="benutzername"
+            <input id="loginUsername" type="text" required placeholder="kullanici_adi"
               class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Passwort</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre</label>
           <div class="relative">
             <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
             <input id="loginPassword" type="password" required placeholder="••••••••"
@@ -110,55 +110,55 @@
         </div>
         <p id="loginError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
         <button id="loginBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
-          <i class="fas fa-sign-in-alt mr-2"></i>Anmelden
+          <i class="fas fa-sign-in-alt mr-2"></i>Giriş Yap
         </button>
       </form>
       <div class="mt-6 text-center space-y-3">
-        <p class="text-slate-500 text-sm">Noch kein Konto?
-          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Registrieren</button>
+        <p class="text-slate-500 text-sm">Hesabın yok mu?
+          <button id="showSignup" class="text-cyan-400 hover:underline font-semibold">Kayıt Ol</button>
         </p>
         <button id="guestPlayBtn" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">
-          <i class="fas fa-ghost mr-1"></i>Ohne Registrierung fortfahren (offline)
+          <i class="fas fa-ghost mr-1"></i>Kayıt olmadan devam et (çevrimdışı)
         </button>
       </div>
     </div>
 
     <!-- SIGNUP PANEL -->
     <div id="signupPanel" class="hidden glass-panel rounded-2xl p-8 border border-white/10">
-      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Registrieren</h2>
+      <h2 class="font-orbitron text-xl font-bold text-slate-200 mb-6 text-center">Kayıt Ol</h2>
       <form id="signupForm" class="space-y-4">
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Benutzername *</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Kullanıcı Adı *</label>
           <div class="relative">
             <i class="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="signupUsername" type="text" required placeholder="eindeutiger_name"
+            <input id="signupUsername" type="text" required placeholder="benzersiz_adin"
               class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Passwort *</label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">Şifre *</label>
           <div class="relative">
             <i class="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="signupPassword" type="password" required placeholder="Mindestens 6 Zeichen"
+            <input id="signupPassword" type="password" required placeholder="En az 6 karakter"
               class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-Mail <span class="text-slate-600">(optional)</span></label>
+          <label class="block text-xs text-slate-400 mb-1.5 uppercase tracking-wider">E-posta <span class="text-slate-600">(isteğe bağlı)</span></label>
           <div class="relative">
             <i class="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-            <input id="signupEmail" type="email" placeholder="beispiel@email.com"
+            <input id="signupEmail" type="email" placeholder="ornek@email.com"
               class="game-input w-full pl-9 pr-4 py-3 rounded-xl font-mono text-sm" />
           </div>
         </div>
         <p id="signupError" class="hidden text-red-400 text-xs text-center py-2 bg-red-500/10 rounded-lg px-3"></p>
         <button id="signupBtn" type="submit" class="w-full btn-primary py-4 rounded-xl font-orbitron text-sm font-bold">
-          <i class="fas fa-user-plus mr-2"></i>Registrieren
+          <i class="fas fa-user-plus mr-2"></i>Kayıt Ol
         </button>
       </form>
       <div class="mt-6 text-center">
-        <p class="text-slate-500 text-sm">Bereits ein Konto?
-          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Anmelden</button>
+        <p class="text-slate-500 text-sm">Zaten hesabın var mı?
+          <button id="showLogin" class="text-cyan-400 hover:underline font-semibold">Giriş Yap</button>
         </p>
       </div>
     </div>
@@ -205,18 +205,18 @@
         <i class="fas fa-envelope text-yellow-400"></i>
       </div>
       <div>
-        <div class="font-orbitron text-sm text-yellow-400">Neue Nachricht</div>
-        <div class="text-xs text-slate-500">Eine Nachricht wartet auf dich nach dem Login</div>
+        <div class="font-orbitron text-sm text-yellow-400">Yeni Mesaj</div>
+        <div class="text-xs text-slate-500">Giriş yapınca seni bekleyen bir mesaj var</div>
       </div>
     </div>
-    <div class="mb-2 text-xs text-slate-500">Von: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
-    <div class="mb-1 text-xs text-slate-500">Datum: <span id="inboxMsgDate" class="text-slate-400"></span></div>
+    <div class="mb-2 text-xs text-slate-500">Gönderen: <span id="inboxMsgFrom" class="text-slate-300"></span></div>
+    <div class="mb-1 text-xs text-slate-500">Tarih: <span id="inboxMsgDate" class="text-slate-400"></span></div>
     <h3 id="inboxMsgSubject" class="font-orbitron text-lg text-slate-200 my-3"></h3>
     <p id="inboxMsgBody" class="text-slate-300 text-sm leading-relaxed mb-5 p-4 bg-white/5 rounded-xl border border-white/5"></p>
     <div class="flex gap-3">
-      <textarea id="inboxReplyInput" rows="2" placeholder="Antworten..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
+      <textarea id="inboxReplyInput" rows="2" placeholder="Yanıtla..." class="game-input flex-1 px-3 py-2 rounded-xl text-sm resize-none"></textarea>
       <button id="inboxReplyBtn" class="px-4 py-2 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-sm hover:bg-cyan-500/30 self-end">
-        <i class="fas fa-reply mr-1"></i>Senden
+        <i class="fas fa-reply mr-1"></i>Gönder
       </button>
     </div>
   </div>
@@ -249,8 +249,8 @@
           <i class="fas fa-shield-alt text-yellow-400"></i>
         </div>
         <div>
-          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin-Panel</h2>
-          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Verwaltung</p>
+          <h2 class="font-orbitron text-xl font-bold text-yellow-400">Admin Paneli</h2>
+          <p class="text-xs text-slate-500">Guthaben-Schulden-Spiel · Yönetim</p>
         </div>
       </div>
       <button id="closeAdminBtn" class="text-slate-400 hover:text-white text-2xl transition-colors">
@@ -261,19 +261,19 @@
     <!-- Admin Tabs -->
     <div class="flex gap-1 px-6 pt-4 border-b border-white/5 overflow-x-auto scrollbar-thin pb-0">
       <button class="admin-tab-btn active-admin-tab" data-tab="stats">
-        <i class="fas fa-chart-bar mr-2"></i>Statistiken
+        <i class="fas fa-chart-bar mr-2"></i>İstatistikler
       </button>
       <button class="admin-tab-btn" data-tab="users">
-        <i class="fas fa-users mr-2"></i>Benutzer
+        <i class="fas fa-users mr-2"></i>Kullanıcılar
       </button>
       <button class="admin-tab-btn" data-tab="messages">
-        <i class="fas fa-envelope mr-2"></i>Nachrichten
+        <i class="fas fa-envelope mr-2"></i>Mesajlar
       </button>
       <button class="admin-tab-btn" data-tab="devices">
-        <i class="fas fa-laptop mr-2"></i>Geräte
+        <i class="fas fa-laptop mr-2"></i>Cihazlar
       </button>
       <button class="admin-tab-btn" data-tab="logs">
-        <i class="fas fa-history mr-2"></i>Protokolle
+        <i class="fas fa-history mr-2"></i>Loglar
       </button>
     </div>
 
@@ -466,6 +466,7 @@
         <button id="openRules" class="glass-panel px-3 py-2 rounded-xl hover:border-cyan-400/50 transition-all" aria-label="Spielregeln">
           <i class="fas fa-book text-slate-400"></i>
         </button>
+        <button id="langToggle" class="glass-panel px-3 py-2 rounded-xl hover:border-purple-400/50 transition-all text-xs font-orbitron text-purple-400">TR/DE</button>
         <button id="teacherModeBtn" class="glass-panel px-3 py-2 rounded-xl hover:border-yellow-400/50 transition-all hidden">
           <i class="fas fa-chalkboard-teacher text-yellow-400"></i>
         </button>
@@ -483,16 +484,16 @@
         <i class="fas fa-gamepad mr-2"></i>Spiel
       </button>
       <button class="main-tab-btn" data-tab="stats">
-        <i class="fas fa-chart-line mr-2"></i>Statistiken
+        <i class="fas fa-chart-line mr-2"></i>İstatistikler
       </button>
       <button class="main-tab-btn" data-tab="tickets">
         <i class="fas fa-ticket-alt mr-2"></i>Tickets
       </button>
       <button class="main-tab-btn" data-tab="leaderboard">
-        <i class="fas fa-trophy mr-2"></i>Rangliste
+        <i class="fas fa-trophy mr-2"></i>Sıralama
       </button>
       <button class="main-tab-btn" data-tab="friends">
-        <i class="fas fa-user-friends mr-2"></i>Freunde
+        <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
       </button>
     </div>
   </nav>
@@ -518,7 +519,7 @@
             <i class="fas fa-clock mr-2 text-sm"></i><span id="timerValue">--</span>s
           </div>
           <div class="flex items-center gap-3">
-            <div class="text-xs text-slate-500 uppercase tracking-widest">Punkte</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest">Puan</div>
             <div id="scoreDisplay" class="font-orbitron text-xl font-bold text-cyan-400">0</div>
           </div>
         </div>
@@ -650,7 +651,7 @@
           </div>
           <div class="glass-panel rounded-2xl p-5 border border-white/5 text-center">
             <div id="statMaxStreak" class="font-orbitron text-4xl font-black text-orange-400">0</div>
-            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststreak</div>
+            <div class="text-xs text-slate-500 uppercase tracking-widest mt-2" data-i18n="best_streak">Beststeak</div>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -669,7 +670,7 @@
         </div>
         <div class="text-center">
           <button id="resetStats" class="px-6 py-2 rounded-xl border border-red-500/30 text-red-400 text-sm font-orbitron hover:bg-red-500/10 transition-all">
-            <i class="fas fa-trash mr-2"></i>Statistiken zurücksetzen
+            <i class="fas fa-trash mr-2"></i>İstatistikleri Sıfırla
           </button>
         </div>
       </div>
@@ -724,7 +725,7 @@
       <div id="tab-leaderboard" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-yellow-400 mb-6">
-            <i class="fas fa-trophy mr-2"></i>Rangliste
+            <i class="fas fa-trophy mr-2"></i>Sıralama Tablosu
           </h2>
           <div id="leaderboardContent"></div>
         </div>
@@ -734,7 +735,7 @@
       <div id="tab-friends" class="tab-content hidden">
         <div class="glass-panel rounded-2xl p-6 border border-white/5">
           <h2 class="font-orbitron text-xl font-bold text-purple-400 mb-6">
-            <i class="fas fa-user-friends mr-2"></i>Freunde
+            <i class="fas fa-user-friends mr-2"></i>Arkadaşlar
           </h2>
           <div id="friendsContent"></div>
         </div>
@@ -746,7 +747,7 @@
   <!-- ─── FOOTER ────────────────────────────────────────────────────────────── -->
   <footer class="py-6 px-4 border-t border-white/5">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
-      <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2025</p>
+      <p class="text-slate-600 text-sm font-rajdhani">Guthaben-Schulden-Spiel – Pro Edition © 2026</p>
       <a href="https://github.com/Higer" target="_blank" rel="noopener noreferrer" class="maker-signature-glass group">
         <div class="maker-glass-inner">
           <span class="text-slate-400 text-sm">Made with</span>
@@ -779,3 +780,10 @@
 </script>
 </body>
 </html>
+
+
+
+
+
+
+
