@@ -1,9 +1,9 @@
 /**
  * auth.js
  * =======
- * Authentication module — username/password based login.
- * SECURITY NOTE: Passwords should be hashed (bcrypt) before storing.
- * This is a simplified implementation for educational purposes.
+ * Authentifizierungsmodul — benutzername/passwortbasiertes Login.
+ * SICHERHEITSHINWEIS: Passwörter sollten vor dem Speichern gehasht werden (bcrypt).
+ * Dies ist eine vereinfachte Implementierung zu Bildungszwecken.
  */
 
 import {
@@ -14,7 +14,7 @@ import {
 
 const SESSION_KEY = 'gss_session_v2';
 
-// ─── Simple hash (NOT cryptographically secure — use bcrypt in production) ──
+// ─── Einfacher Hash (NICHT kryptografisch sicher — verwenden Sie bcrypt in der Produktion) ──
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data    = encoder.encode(password + '_gss_salt_2024');
@@ -22,19 +22,19 @@ async function hashPassword(password) {
   return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// ─── Login ────────────────────────────────────────────────────
+// ─── Anmeldung ────────────────────────────────────────────────────
 export async function loginUser(username, password) {
   if (!username || !password) {
-    return { success: false, error: 'Kullanıcı adı ve şifre zorunlu.' };
+    return { success: false, error: 'Benutzername und Passwort sind erforderlich.' };
   }
 
   try {
-    // ADMIN shortcut (FIX: admin password should not be hardcoded — use env/config)
+    // ADMIN-Verknüpfung (FIX: Admin-Passwort sollte nicht fest codiert sein — env/config verwenden)
     if (username === 'admin') {
-      const adminPwd = await hashPassword('admin_secure_2024'); // Change this!
+      const adminPwd = await hashPassword('admin_secure_2024'); // Ändern Sie dies!
       const inputPwd = await hashPassword(password);
       if (inputPwd !== adminPwd) {
-        return { success: false, error: 'Yanlış şifre.' };
+        return { success: false, error: 'Falsches Passwort.' };
       }
       const adminUser = {
         uid: '__admin__',
@@ -47,12 +47,12 @@ export async function loginUser(username, password) {
 
     const userData = await getUserByUsername(username);
     if (!userData) {
-      return { success: false, error: 'Kullanıcı bulunamadı.' };
+      return { success: false, error: 'Benutzer nicht gefunden.' };
     }
 
     const inputHash = await hashPassword(password);
     if (userData.profile?.passwordHash !== inputHash) {
-      return { success: false, error: 'Yanlış şifre.' };
+      return { success: false, error: 'Falsches Passwort.' };
     }
 
     const user = {
@@ -62,32 +62,32 @@ export async function loginUser(username, password) {
     setCurrentUser(user);
     saveSession(user);
 
-    // Record device
+    // Gerät registrieren
     await recordDevice(userData.uid).catch(() => {});
 
     return { success: true };
   } catch (e) {
     console.error('loginUser error:', e);
-    return { success: false, error: 'Giriş hatası: ' + e.message };
+    return { success: false, error: 'Anmeldefehler: ' + e.message };
   }
 }
 
-// ─── Signup ───────────────────────────────────────────────────
+// ─── Registrierung ───────────────────────────────────────────────────
 export async function signupUser(username, password, email) {
   if (!username || username.length < 3) {
-    return { success: false, error: 'Kullanıcı adı en az 3 karakter olmalı.' };
+    return { success: false, error: 'Der Benutzername muss mindestens 3 Zeichen lang sein.' };
   }
   if (!password || password.length < 6) {
-    return { success: false, error: 'Şifre en az 6 karakter olmalı.' };
+    return { success: false, error: 'Das Passwort muss mindestens 6 Zeichen lang sein.' };
   }
   if (username.toLowerCase() === 'admin') {
-    return { success: false, error: 'Bu kullanıcı adı kullanılamaz.' };
+    return { success: false, error: 'Dieser Benutzername kann nicht verwendet werden.' };
   }
 
   try {
     const existing = await getUserByUsername(username);
     if (existing) {
-      return { success: false, error: 'Bu kullanıcı adı zaten alınmış.' };
+      return { success: false, error: 'Dieser Benutzername ist bereits vergeben.' };
     }
 
     const uid          = 'u_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -122,11 +122,11 @@ export async function signupUser(username, password, email) {
     return { success: true };
   } catch (e) {
     console.error('signupUser error:', e);
-    return { success: false, error: 'Kayıt hatası: ' + e.message };
+    return { success: false, error: 'Registrierungsfehler: ' + e.message };
   }
 }
 
-// ─── Session Persistence ──────────────────────────────────────
+// ─── Sitzungspersistenz ──────────────────────────────────────
 function saveSession(user) {
   try {
     localStorage.setItem(SESSION_KEY, JSON.stringify({ uid: user.uid, username: user.profile?.username, savedAt: Date.now() }));
@@ -140,7 +140,7 @@ export async function restoreSession() {
     const sess = JSON.parse(raw);
     if (!sess.uid) return false;
 
-    // Session expires after 30 days
+    // Sitzung läuft nach 30 Tagen ab
     if (Date.now() - (sess.savedAt || 0) > 30 * 24 * 60 * 60 * 1000) {
       localStorage.removeItem(SESSION_KEY);
       return false;
